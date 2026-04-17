@@ -30,7 +30,7 @@ echo "==> Installing Starship..."
 if command -v starship &>/dev/null; then
     SKIPPED+=("starship (already installed)")
 else
-    curl -sS https://starship.rs/install.sh | sh -s -- --yes
+    curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir ~/.local/bin
     INSTALLED+=("starship")
 fi
 
