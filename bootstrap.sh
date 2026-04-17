@@ -84,14 +84,16 @@ else
     INSTALLED+=("starship")
 fi
 
-echo "==> Installing Claude Desktop (claude-desktop-debian)..."
+echo "==> Installing Claude Desktop..."
 if command -v claude-desktop &>/dev/null; then
     SKIPPED+=("claude-desktop (already installed)")
 else
-    CLAUDE_DESKTOP_TMP=$(mktemp -d)
-    git clone https://github.com/aaddrick/claude-desktop-debian "$CLAUDE_DESKTOP_TMP/claude-desktop-debian"
-    bash "$CLAUDE_DESKTOP_TMP/claude-desktop-debian/build.sh"
-    rm -rf "$CLAUDE_DESKTOP_TMP"
+    curl -fsSL https://aaddrick.github.io/claude-desktop-debian/KEY.gpg \
+        | sudo gpg --dearmor -o /usr/share/keyrings/claude-desktop.gpg
+    echo "deb [signed-by=/usr/share/keyrings/claude-desktop.gpg arch=amd64,arm64] https://aaddrick.github.io/claude-desktop-debian stable main" \
+        | sudo tee /etc/apt/sources.list.d/claude-desktop.list > /dev/null
+    sudo apt-get update -q
+    sudo apt-get install -y claude-desktop
     INSTALLED+=("claude-desktop")
 fi
 
