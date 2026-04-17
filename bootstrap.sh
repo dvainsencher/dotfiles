@@ -9,10 +9,10 @@ SKIPPED=()
 
 apt_install() {
     local pkg="$1"
-    if command -v "$pkg" &>/dev/null; then
+    if dpkg -s "$pkg" &>/dev/null 2>&1; then
         SKIPPED+=("$pkg (already installed)")
     else
-        echo "==> Installing $pkg..."
+        echo "  installing $pkg..."
         sudo apt-get install -y "$pkg"
         INSTALLED+=("$pkg")
     fi
@@ -25,6 +25,56 @@ echo "==> Installing system packages..."
 apt_install git
 apt_install vim
 apt_install curl
+apt_install wget
+apt_install build-essential
+apt_install ca-certificates
+apt_install gnupg
+apt_install lsb-release
+
+echo "==> Installing Python dev tools..."
+apt_install python3
+apt_install python3-pip
+apt_install python3-venv
+apt_install python3-dev
+
+echo "==> Installing Node.js (via NodeSource)..."
+if command -v node &>/dev/null; then
+    SKIPPED+=("node (already installed)")
+else
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+    INSTALLED+=("node $(node --version 2>/dev/null || true)")
+fi
+
+echo "==> Installing VS Code..."
+if command -v code &>/dev/null; then
+    SKIPPED+=("vscode (already installed)")
+else
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/packages.microsoft.gpg > /dev/null
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
+        | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+    sudo apt-get update -q
+    sudo apt-get install -y code
+    INSTALLED+=("vscode")
+fi
+
+echo "==> Installing Google Chrome..."
+if command -v google-chrome &>/dev/null || command -v google-chrome-stable &>/dev/null; then
+    SKIPPED+=("google-chrome (already installed)")
+else
+    wget -q -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo apt-get install -y /tmp/google-chrome.deb
+    rm /tmp/google-chrome.deb
+    INSTALLED+=("google-chrome")
+fi
+
+echo "==> Installing Claude Code..."
+if command -v claude &>/dev/null; then
+    SKIPPED+=("claude-code (already installed)")
+else
+    npm install -g @anthropic-ai/claude-code
+    INSTALLED+=("claude-code")
+fi
 
 echo "==> Installing Starship..."
 if command -v starship &>/dev/null; then
@@ -34,12 +84,33 @@ else
     INSTALLED+=("starship")
 fi
 
+echo "==> Installing Claude Desktop (claude-desktop-debian)..."
+if command -v claude-desktop &>/dev/null; then
+    SKIPPED+=("claude-desktop (already installed)")
+else
+    CLAUDE_DESKTOP_TMP=$(mktemp -d)
+    git clone https://github.com/aaddrick/claude-desktop-debian "$CLAUDE_DESKTOP_TMP/claude-desktop-debian"
+    bash "$CLAUDE_DESKTOP_TMP/claude-desktop-debian/build.sh"
+    rm -rf "$CLAUDE_DESKTOP_TMP"
+    INSTALLED+=("claude-desktop")
+fi
+
 echo "==> Cloning dotfiles..."
 if [[ ! -d "$DOTFILES_DIR" ]]; then
     git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
     INSTALLED+=("dotfiles -> $DOTFILES_DIR")
 else
     SKIPPED+=("$DOTFILES_DIR (already exists)")
+fi
+
+echo "==> Setting up claude-commands..."
+CLAUDE_COMMANDS_DIR="$HOME/.claude/commands"
+if [[ -d "$CLAUDE_COMMANDS_DIR" && "$(git -C "$CLAUDE_COMMANDS_DIR" remote get-url origin 2>/dev/null)" == *"claude-commands"* ]]; then
+    SKIPPED+=("claude-commands (already installed)")
+else
+    mkdir -p "$HOME/.claude"
+    git clone https://github.com/dvainsencher/claude-commands "$CLAUDE_COMMANDS_DIR"
+    INSTALLED+=("claude-commands -> $CLAUDE_COMMANDS_DIR")
 fi
 
 echo "==> Running install.sh..."
