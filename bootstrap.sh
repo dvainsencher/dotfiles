@@ -30,12 +30,26 @@ apt_install build-essential
 apt_install ca-certificates
 apt_install gnupg
 apt_install lsb-release
+apt_install tmux
+apt_install jq
+apt_install fzf
+apt_install ripgrep
+apt_install direnv
+apt_install fontconfig
 
 echo "==> Installing Python dev tools..."
 apt_install python3
 apt_install python3-pip
 apt_install python3-venv
 apt_install python3-dev
+
+echo "==> Installing uv (Python package manager)..."
+if command -v uv &>/dev/null; then
+    SKIPPED+=("uv (already installed)")
+else
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    INSTALLED+=("uv")
+fi
 
 echo "==> Installing Node.js (via NodeSource)..."
 if command -v node &>/dev/null; then
@@ -44,6 +58,20 @@ else
     curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
     sudo apt-get install -y nodejs
     INSTALLED+=("node $(node --version 2>/dev/null || true)")
+fi
+
+echo "==> Installing gh (GitHub CLI)..."
+if command -v gh &>/dev/null; then
+    SKIPPED+=("gh (already installed)")
+else
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+        | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+    sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    sudo apt-get update -q
+    sudo apt-get install -y gh
+    INSTALLED+=("gh")
 fi
 
 echo "==> Installing VS Code..."
@@ -95,6 +123,34 @@ else
     sudo apt-get update -q
     sudo apt-get install -y claude-desktop
     INSTALLED+=("claude-desktop")
+fi
+
+echo "==> Installing JetBrainsMono Nerd Font..."
+FONT_DIR="$HOME/.local/share/fonts"
+FONT_FILE="$FONT_DIR/JetBrainsMonoNLNerdFont-Regular.ttf"
+if [[ -f "$FONT_FILE" ]]; then
+    SKIPPED+=("JetBrainsMono Nerd Font (already installed)")
+else
+    mkdir -p "$FONT_DIR"
+    curl -fLo "$FONT_FILE" \
+        https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/NoLigatures/Regular/JetBrainsMonoNLNerdFont-Regular.ttf
+    fc-cache -f "$FONT_DIR"
+    INSTALLED+=("JetBrainsMono Nerd Font")
+fi
+
+echo "==> Setting up SSH key..."
+if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
+    SKIPPED+=("ssh key (already exists)")
+else
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    ssh-keygen -t ed25519 -C "dvainsencher@gmail.com" -f "$HOME/.ssh/id_ed25519" -N ""
+    INSTALLED+=("ssh key (~/.ssh/id_ed25519)")
+    echo ""
+    echo "  Your public key (add to GitHub → https://github.com/settings/keys):"
+    echo ""
+    cat "$HOME/.ssh/id_ed25519.pub"
+    echo ""
 fi
 
 echo "==> Cloning dotfiles..."
