@@ -60,4 +60,5 @@ HISTIGNORE="ls:ll:cd:pwd:exit:clear"
 export PATH="$HOME/.local/bin:$PATH"
 . "$HOME/.cargo/env"
 
+eval "$(direnv hook bash)"
 eval "$(starship init bash)"
