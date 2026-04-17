@@ -38,3 +38,4 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `inputrc` | `~/.inputrc` | Readline config |
 | `profile` | not symlinked | Login shell PATH + cargo env |
 | `gitconfig.local.example` | — | Template for `~/.gitconfig.local` |
+| `starship.toml` | `~/.config/starship.toml` | Starship prompt config |

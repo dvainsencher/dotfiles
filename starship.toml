@@ -1,0 +1,11 @@
+add_newline = true
+
+[directory]
+truncation_length = 3
+
+[git_branch]
+symbol = " "
+
+[cmd_duration]
+min_time = 2_000
+format = "took [$duration]($style) "

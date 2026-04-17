@@ -41,10 +41,11 @@ maybe_run() {
 }
 
 echo "==> Linking dotfiles..."
-link "$DOTFILES_DIR/gitconfig"  "$HOME/.gitconfig"
-link "$DOTFILES_DIR/bashrc"     "$HOME/.bashrc"
-link "$DOTFILES_DIR/vimrc"      "$HOME/.vimrc"
-link "$DOTFILES_DIR/inputrc"    "$HOME/.inputrc"
+link "$DOTFILES_DIR/gitconfig"     "$HOME/.gitconfig"
+link "$DOTFILES_DIR/bashrc"        "$HOME/.bashrc"
+link "$DOTFILES_DIR/vimrc"         "$HOME/.vimrc"
+link "$DOTFILES_DIR/inputrc"       "$HOME/.inputrc"
+link "$DOTFILES_DIR/starship.toml" "$HOME/.config/starship.toml"
 
 echo "==> Setting up git-hooks..."
 if [[ ! -d "$HOME/.config/git-hooks" ]]; then
