@@ -1,16 +1,27 @@
-
 [color]
     ui = auto
     diff = auto
     status = auto
     branch = auto
-[user]
-    name = Daniel Vainsencher
-	email = dvainsencher@gmail.com
 [push]
-	default = current
+    default = current
+[init]
+    defaultBranch = main
+[credential "https://github.com"]
+    helper =
+    helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+    helper =
+    helper = !/usr/bin/gh auth git-credential
+[core]
+    hooksPath = ~/.config/git-hooks
+[include]
+    path = ~/.gitconfig.local
 [alias]
-	co = checkout
-	br = branch
-	ci = commit
-	st = status
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    lg = log --oneline --graph --decorate
+    ps = push
+    pl = pull
