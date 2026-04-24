@@ -20,7 +20,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
 - bash-sensible is inlined directly (no external dependency)
-- `~/.claude/commands` is where `dvainsencher/claude-commands` gets cloned
+- `~/.claude/commands` is symlinked from `.claude/commands` in this repo
 
 ## bootstrap.sh conventions
 - All installs are idempotent — check before installing, skip if already present
@@ -39,3 +39,8 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `profile` | not symlinked | Login shell PATH + cargo env |
 | `gitconfig.local.example` | — | Template for `~/.gitconfig.local` |
 | `starship.toml` | `~/.config/starship.toml` | Starship prompt config |
+| `.claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Global Claude Code config |
+| `.claude/settings.json` | `~/.claude/settings.json` | Claude hooks and statusLine |
+| `.claude/settings.local.json` | `~/.claude/settings.local.json` | Claude permissions |
+| `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script |
+| `.claude/commands/` | `~/.claude/commands/` | Claude slash commands |

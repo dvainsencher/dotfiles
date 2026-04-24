@@ -47,6 +47,14 @@ link "$DOTFILES_DIR/vimrc"         "$HOME/.vimrc"
 link "$DOTFILES_DIR/inputrc"       "$HOME/.inputrc"
 link "$DOTFILES_DIR/starship.toml" "$HOME/.config/starship.toml"
 
+echo "==> Linking Claude config..."
+mkdir -p "$HOME/.claude"
+link "$DOTFILES_DIR/.claude/CLAUDE.md"             "$HOME/.claude/CLAUDE.md"
+link "$DOTFILES_DIR/.claude/settings.json"         "$HOME/.claude/settings.json"
+link "$DOTFILES_DIR/.claude/settings.local.json"   "$HOME/.claude/settings.local.json"
+link "$DOTFILES_DIR/.claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+link "$DOTFILES_DIR/.claude/commands"              "$HOME/.claude/commands"
+
 echo "==> Setting up git-hooks..."
 if [[ ! -d "$HOME/.config/git-hooks" ]]; then
     maybe_run "clone dvainsencher/git-hooks -> ~/.config/git-hooks" \

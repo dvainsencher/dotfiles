@@ -161,16 +161,6 @@ else
     SKIPPED+=("$DOTFILES_DIR (already exists)")
 fi
 
-echo "==> Setting up claude-commands..."
-CLAUDE_COMMANDS_DIR="$HOME/.claude/commands"
-if [[ -d "$CLAUDE_COMMANDS_DIR" && "$(git -C "$CLAUDE_COMMANDS_DIR" remote get-url origin 2>/dev/null)" == *"claude-commands"* ]]; then
-    SKIPPED+=("claude-commands (already installed)")
-else
-    mkdir -p "$HOME/.claude"
-    git clone https://github.com/dvainsencher/claude-commands "$CLAUDE_COMMANDS_DIR"
-    INSTALLED+=("claude-commands -> $CLAUDE_COMMANDS_DIR")
-fi
-
 echo "==> Running install.sh..."
 bash "$DOTFILES_DIR/install.sh"
 

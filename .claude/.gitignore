@@ -1,0 +1,7 @@
+# Sensitive — never commit
+.credentials.json
+
+# Runtime data
+history.jsonl
+mcp-needs-auth-cache.json
+*.bak
