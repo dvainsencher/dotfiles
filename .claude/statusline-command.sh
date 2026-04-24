@@ -20,7 +20,9 @@ fi
 
 model=$(echo "$input" | jq -r '.model.display_name // ""')
 
-used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+sess_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+five_h=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+seven_d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
 
 # Build status line
 printf "\033[0;33m%s@%s\033[0m \033[0;34m%s\033[0m" "$user" "$host" "$short_cwd"
@@ -33,8 +35,16 @@ if [ -n "$model" ]; then
   printf " \033[0;36m%s\033[0m" "$model"
 fi
 
-if [ -n "$used_pct" ]; then
-  printf " \033[0;32mctx:%.0f%%\033[0m" "$used_pct"
+if [ -n "$five_h" ]; then
+  printf " \033[0;33m5h:%.0f%%\033[0m" "$five_h"
+fi
+
+if [ -n "$seven_d" ]; then
+  printf " \033[0;33m7d:%.0f%%\033[0m" "$seven_d"
+fi
+
+if [ -n "$sess_pct" ]; then
+  printf " \033[0;32msess:%.0f%%\033[0m" "$sess_pct"
 fi
 
 printf "\n"
