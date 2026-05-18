@@ -30,23 +30,39 @@ If there are uncommitted changes, warn the user and ask whether to:
 - (a) Abort and let them commit first
 - (b) Proceed anyway (only the already-committed changes will be pushed)
 
-## Step 3 — Push the branch
+## Step 3 — Verify documentation
+
+Run: `git diff main..HEAD --name-only` (or `master..HEAD` if applicable) to see all changed files.
+
+Review the diff and determine if any documentation should be updated. Look for:
+- New features, flags, or configuration options that aren't yet documented
+- Removed or renamed features that are referenced in existing docs
+- Changed behavior that existing docs describe incorrectly
+- New files or scripts that lack a corresponding entry in a README or table
+
+If documentation updates seem warranted, describe what's missing or outdated and ask the user: "Should I update the docs before publishing, or do you want to skip this?"
+- If yes, make the documentation changes and commit them before continuing.
+- If no, continue to Step 4.
+
+If no documentation changes are needed, note that briefly and continue.
+
+## Step 4 — Push the branch
 
 Run: `git push --set-upstream origin $(git branch --show-current)`
 
 If the push fails because the remote already has diverging commits, report the error clearly and ask the user how they want to resolve it (rebase, force-push, or abort). Do NOT force-push without explicit confirmation.
 
-## Step 4 — Create a Pull Request
+## Step 5 — Create a Pull Request
 
 Run: `gh pr create --fill`
 
 - `--fill` uses the branch name and commit messages to auto-populate title and body.
-- If the command fails because a PR already exists, retrieve its URL with `gh pr view --json url -q .url` and continue to Step 5.
+- If the command fails because a PR already exists, retrieve its URL with `gh pr view --json url -q .url` and continue to Step 6.
 - If the repo has a PR template, `--fill` will respect it.
 
 Capture the PR URL and show it to the user.
 
-## Step 5 — Choose merge strategy
+## Step 6 — Choose merge strategy
 
 Inspect the branch name and number of commits to suggest the appropriate strategy, then confirm with the user:
 
@@ -59,13 +75,13 @@ Run: `git log main..HEAD --oneline` (or `master..HEAD` if applicable)
 
 Present your recommendation with a brief rationale based on commit count and branch name, then ask the user to confirm or choose a different strategy before merging.
 
-## Step 6 — Merge the PR
+## Step 7 — Merge the PR
 
-Execute the merge command chosen in Step 5.
+Execute the merge command chosen in Step 6.
 
 Wait for the merge to succeed. If it fails (e.g., merge conflicts, required checks failing), report the error and stop — do not attempt to resolve conflicts automatically.
 
-## Step 7 — Switch to main and pull
+## Step 8 — Switch to main and pull
 
 Run:
 ```
