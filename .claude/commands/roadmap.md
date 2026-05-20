@@ -40,6 +40,11 @@ Guide the user to create one interactively:
    - Write ROADMAP.md to the project root.
    - Create `docs/roadmap/` if it doesn't exist.
    - Write `docs/roadmap/_template.md` with this content:
+   - Add the following lines to CLAUDE.md under a `## Roadmap` section (create the file if it doesn't exist):
+     ```
+     ## Roadmap
+     `ROADMAP.md` — flat `[x]/[>]/[ ]` list, priority order. Detail files: `docs/roadmap/<slug>.md`. Use `/roadmap` to query or update.
+     ```
      ```markdown
      # <Item name>
 
