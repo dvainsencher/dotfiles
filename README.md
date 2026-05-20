@@ -1,14 +1,21 @@
 # dotfiles
 
-Personal dotfiles for bash, git, vim, and readline.
+Personal dotfiles for Ubuntu/Debian — shell, git, vim, Starship prompt, direnv, and Claude Code.
 
-## Bootstrap a fresh machine
+## Entry points
+
+| Script | Use when |
+|--------|----------|
+| `bootstrap.sh` | Fresh machine — installs packages, tools, fonts, generates SSH key, then runs `install.sh` |
+| `install.sh` | Dotfiles only — symlinks config files, clones git-hooks, creates `~/.gitconfig.local` |
+
+### Bootstrap a fresh machine
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/dvainsencher/dotfiles/main/bootstrap.sh | bash
 ```
 
-## Install dotfiles only
+### Install dotfiles only
 
 ```sh
 git clone https://github.com/dvainsencher/dotfiles.git ~/dotfiles
@@ -17,18 +24,41 @@ git clone https://github.com/dvainsencher/dotfiles.git ~/dotfiles
 
 ## Prerequisites
 
-- Ubuntu / Debian
-- `git`, `curl`, `vim`
-- [Starship](https://starship.rs) prompt (installed automatically by `bootstrap.sh`)
+For `install.sh`: `git`, `curl`, `vim`
+
+For `bootstrap.sh`: just `curl` — everything else is installed automatically, including:
+gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, Chrome, Claude Desktop, Claude Code.
 
 ## What's included
 
-| File | Description |
-|------|-------------|
-| `bashrc` | Shell config: history, aliases, completion, Starship prompt |
-| `gitconfig` | Aliases (`co`, `br`, `ci`, `st`, `lg`, `ps`, `pl`), colors, hooks |
-| `vimrc` | Indentation, search, statusline, paste toggle |
-| `inputrc` | Word navigation, history search, case-insensitive completion |
+| File | Symlinked to | Description |
+|------|-------------|-------------|
+| `bashrc` | `~/.bashrc` | Shell config: history, aliases, completion, direnv, Starship prompt |
+| `gitconfig` | `~/.gitconfig` | Aliases (`co`, `br`, `ci`, `st`, `lg`, `ps`, `pl`), colors, hooks |
+| `gitconfig.local.example` | — | Template for `~/.gitconfig.local` (name + email, not tracked) |
+| `vimrc` | `~/.vimrc` | Indentation, search, statusline, paste toggle |
+| `inputrc` | `~/.inputrc` | Word navigation, history search, case-insensitive completion |
+| `profile` | not symlinked | Login shell PATH + cargo env |
+| `starship.toml` | `~/.config/starship.toml` | Starship prompt config (nerd-font symbols, command duration) |
+
+## Claude Code
+
+| File | Symlinked to | Description |
+|------|-------------|-------------|
+| `.claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Global Claude Code instructions |
+| `.claude/settings.json` | `~/.claude/settings.json` | Hooks and status line config |
+| `.claude/settings.local.json` | `~/.claude/settings.local.json` | Tool permissions |
+| `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script (session usage, rate limits) |
+| `.claude/commands/` | `~/.claude/commands/` | Global slash commands |
+
+### Slash commands
+
+| Command | Description |
+|---|---|
+| `/publish` | Push branch → create PR → merge (with strategy selection) → sync main |
+| `/roadmap` | Manage a project roadmap — view next steps, track status, add items, plan implementation detail |
+
+Run `/roadmap` with no args to see what's next, or pass natural language: `what's next`, `status`, `plan <item>`, etc. If no `ROADMAP.md` exists it walks you through creating one.
 
 ## Personal git identity
 
