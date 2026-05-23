@@ -62,3 +62,6 @@ export PATH="$HOME/.local/bin:$PATH"
 
 eval "$(direnv hook bash)"
 eval "$(starship init bash)"
+
+# Local secrets (gitignored) — export GITHUB_PAT, etc.
+[ -f "$HOME/.env.local" ] && source "$HOME/.env.local"
