@@ -55,7 +55,17 @@ link "$DOTFILES_DIR/.claude/settings.local.json"   "$HOME/.claude/settings.local
 link "$DOTFILES_DIR/.claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 link "$DOTFILES_DIR/.claude/commands"              "$HOME/.claude/commands"
 link "$DOTFILES_DIR/.claude/hooks"                 "$HOME/.claude/hooks"
-link "$DOTFILES_DIR/.claude/mcp.json"              "$HOME/.claude/mcp.json"
+
+echo "==> Registering GitHub MCP..."
+[ -f "$HOME/.env.local" ] && source "$HOME/.env.local"
+if [[ -n "${GITHUB_PAT:-}" ]]; then
+    maybe_run "register GitHub MCP (github -> api.githubcopilot.com)" \
+        claude mcp add --transport http --scope user github \
+        "https://api.githubcopilot.com/mcp/" \
+        --header "Authorization: Bearer ${GITHUB_PAT}"
+else
+    SKIPPED+=("GitHub MCP (GITHUB_PAT not set — add it to ~/.env.local and re-run)")
+fi
 
 echo "==> Setting up git-hooks..."
 if [[ ! -d "$HOME/.config/git-hooks" ]]; then
