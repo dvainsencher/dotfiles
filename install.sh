@@ -54,6 +54,8 @@ link "$DOTFILES_DIR/.claude/settings.json"         "$HOME/.claude/settings.json"
 link "$DOTFILES_DIR/.claude/settings.local.json"   "$HOME/.claude/settings.local.json"
 link "$DOTFILES_DIR/.claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 link "$DOTFILES_DIR/.claude/commands"              "$HOME/.claude/commands"
+link "$DOTFILES_DIR/.claude/hooks"                 "$HOME/.claude/hooks"
+link "$DOTFILES_DIR/.claude/mcp.json"              "$HOME/.claude/mcp.json"
 
 echo "==> Setting up git-hooks..."
 if [[ ! -d "$HOME/.config/git-hooks" ]]; then

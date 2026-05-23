@@ -1,5 +1,6 @@
 # Sensitive — never commit
 .credentials.json
+mcp.json
 
 # Runtime data
 history.jsonl

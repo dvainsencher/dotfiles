@@ -1,6 +1,6 @@
 ---
 description: Push branch, create PR, merge with appropriate strategy, and sync main
-allowed-tools: Bash(git *), Bash(gh *)
+allowed-tools: Bash(git *), Bash(gh *), Agent
 ---
 
 # Publish Workflow
@@ -61,6 +61,25 @@ Run: `gh pr create --fill`
 - If the repo has a PR template, `--fill` will respect it.
 
 Capture the PR URL and show it to the user.
+
+## Step 5.5 — Automated code review
+
+Before merging, get an automated review of the PR diff.
+
+Run: `gh pr diff`
+
+Use the Agent tool (general-purpose subagent) with this prompt:
+"Review this GitHub PR diff. Check for:
+1. Logic or correctness errors
+2. Security issues (injection, hardcoded secrets, missing validation)
+3. Test coverage gaps — new code paths with no corresponding test
+4. Documentation gaps — public APIs, config options, or new behaviors not documented
+5. Project-specific rules from CLAUDE.md (route naming, TDD pattern, no AWS imports in core/)
+
+Rate each finding: **critical** (block merge), **warning** (should fix), **notice** (optional).
+If no issues found, say 'LGTM'."
+
+Present the review to the user. If there are **critical** findings, stop and ask how to proceed before continuing to Step 6.
 
 ## Step 6 — Choose merge strategy
 
