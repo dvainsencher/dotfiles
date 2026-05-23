@@ -9,3 +9,7 @@
 **Docs check**: The `/publish` workflow includes a documentation review step. Update any docs that describe changed behavior before the PR is created.
 
 **PR review**: The `/publish` workflow includes an automated code review step. If the review finds critical issues, resolve them before merging.
+
+**Bug fix TDD**: When you find a bug, first write a failing test that reproduces it, then fix the code, then run the test again to confirm it's green. Never fix a bug without a test.
+
+**Roadmap sync**: Before opening a PR, mark the corresponding ROADMAP.md item `[x]` and include that change in the feature branch commit so it merges with the work.
