@@ -81,6 +81,7 @@ If no issues found, say 'LGTM'."
 
 Present the review to the user. If there are **critical** findings, stop and ask how to proceed before continuing to Step 6.
 
+
 ## Step 6 — Choose merge strategy
 
 Inspect the branch name and number of commits to suggest the appropriate strategy, then confirm with the user:
