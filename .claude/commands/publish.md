@@ -68,13 +68,10 @@ Before merging, get an automated review of the PR diff.
 
 Run: `gh pr diff`
 
-Use the Agent tool (general-purpose subagent) with this prompt:
-"Review this GitHub PR diff. Check for:
-1. Logic or correctness errors
-2. Security issues (injection, hardcoded secrets, missing validation)
-3. Test coverage gaps — new code paths with no corresponding test
-4. Documentation gaps — public APIs, config options, or new behaviors not documented
-5. Project-specific rules from CLAUDE.md (route naming, TDD pattern, no AWS imports in core/)
+Use the Agent tool (model: sonnet) with this prompt:
+"You are performing a code review. First read ~/.claude/agents/code-reviewer.md for the review checklist and output format. Then review this GitHub PR diff against that checklist. Also check:
+- Project-specific rules from CLAUDE.md in the working directory (if present)
+- Documentation gaps — public APIs, config options, or new behaviors not documented
 
 Rate each finding: **critical** (block merge), **warning** (should fix), **notice** (optional).
 If no issues found, say 'LGTM'."
