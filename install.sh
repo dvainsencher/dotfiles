@@ -61,7 +61,10 @@ echo "==> Generating RTK.md..."
 RTK_MD="$HOME/.claude/RTK.md"
 if command -v rtk &>/dev/null; then
     if [[ ! -f "$RTK_MD" ]]; then
-        cat > "$RTK_MD" << 'EOF'
+        if [[ "$DRY_RUN" == true ]]; then
+            echo "  [dry-run] generate ~/.claude/RTK.md"
+        else
+            cat > "$RTK_MD" << 'EOF'
 # RTK - Rust Token Killer
 
 **Usage**: Token-optimized CLI proxy (60-90% savings on dev operations)
@@ -92,7 +95,8 @@ Example: `git status` → `rtk git status` (transparent, 0 tokens overhead)
 
 Refer to CLAUDE.md for full command reference.
 EOF
-        DONE+=("generated ~/.claude/RTK.md")
+            DONE+=("generated ~/.claude/RTK.md")
+        fi
     else
         SKIPPED+=("~/.claude/RTK.md (already exists)")
     fi
