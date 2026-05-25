@@ -32,19 +32,37 @@ If there are uncommitted changes, warn the user and ask whether to:
 
 ## Step 3 — Verify documentation
 
-Run: `git diff main..HEAD --name-only` (or `master..HEAD` if applicable) to see all changed files.
+Run: `git diff main..HEAD --name-only` (or `master..HEAD` if applicable) and `git diff main..HEAD --diff-filter=A --name-only` to see all changed and newly added files.
 
-Review the diff and determine if any documentation should be updated. Look for:
-- New features, flags, or configuration options that aren't yet documented
-- Removed or renamed features that are referenced in existing docs
-- Changed behavior that existing docs describe incorrectly
-- New files or scripts that lack a corresponding entry in a README or table
+**Phase 1 — Classify the diff (no subagent):**
 
-If documentation updates seem warranted, describe what's missing or outdated and ask the user: "Should I update the docs before publishing, or do you want to skip this?"
+Check whether any changed file is doc-impacting. A file is doc-impacting if it matches ANY of:
+- New files added (any file in `--diff-filter=A` output)
+- Source or scripts: `*.sh`, `*.py`, `*.ts`, `*.js`, files under `src/` or `lib/`
+- Behavior-affecting config: `*.toml`, `*.json` (excluding `package-lock.json`, `yarn.lock`, `Cargo.lock`)
+- Install/setup scripts: `install.sh`, `bootstrap.sh`
+- Existing docs: `*.md` (changes that may drift from code)
+
+A file is **not** doc-impacting if it only matches skip patterns:
+- Test files: paths containing `test`, `spec`, or `__tests__`
+- CI/tooling: `.github/`, `.gitignore`, `.eslintrc*`, `.prettierrc*`
+- Lock files: `package-lock.json`, `yarn.lock`, `Cargo.lock`
+- Agent/command/hook definitions: `.claude/agents/`, `.claude/commands/`, `.claude/hooks/`
+
+If ALL changed files are non-doc-impacting, print:
+> "Step 3 — No doc-impacting files changed, skipping docs audit."
+Then continue to Step 4.
+
+**Phase 2 — Docs audit (only if triggered):**
+
+Get the full diff: `git diff main..HEAD` (or `master..HEAD`).
+
+Use the Agent tool (model: sonnet) with this prompt:
+"You are performing a documentation audit. First read `~/.claude/agents/docs-writer.md` for the audit checklist and output format. Then review this diff to identify any documentation that should be added or updated. If nothing needs updating, say 'Docs are up to date' in one line and stop."
+
+Present the findings to the user. If any outdated or missing docs are found, ask: "Should I update the docs before publishing, or skip?"
 - If yes, make the documentation changes and commit them before continuing.
 - If no, continue to Step 4.
-
-If no documentation changes are needed, note that briefly and continue.
 
 ## Step 4 — Push the branch
 
