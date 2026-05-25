@@ -55,14 +55,62 @@ link "$DOTFILES_DIR/.claude/settings.local.json"   "$HOME/.claude/settings.local
 link "$DOTFILES_DIR/.claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 link "$DOTFILES_DIR/.claude/commands"              "$HOME/.claude/commands"
 link "$DOTFILES_DIR/.claude/hooks"                 "$HOME/.claude/hooks"
+link "$DOTFILES_DIR/.claude/agents"                "$HOME/.claude/agents"
+
+echo "==> Generating RTK.md..."
+RTK_MD="$HOME/.claude/RTK.md"
+if command -v rtk &>/dev/null; then
+    if [[ ! -f "$RTK_MD" ]]; then
+        cat > "$RTK_MD" << 'EOF'
+# RTK - Rust Token Killer
+
+**Usage**: Token-optimized CLI proxy (60-90% savings on dev operations)
+
+## Meta Commands (always use rtk directly)
+
+```bash
+rtk gain              # Show token savings analytics
+rtk gain --history    # Show command usage history with savings
+rtk discover          # Analyze Claude Code history for missed opportunities
+rtk proxy <cmd>       # Execute raw command without filtering (for debugging)
+```
+
+## Installation Verification
+
+```bash
+rtk --version         # Should show: rtk X.Y.Z
+rtk gain              # Should work (not "command not found")
+which rtk             # Verify correct binary
+```
+
+⚠️ **Name collision**: If `rtk gain` fails, you may have reachingforthejack/rtk (Rust Type Kit) installed instead.
+
+## Hook-Based Usage
+
+All other commands are automatically rewritten by the Claude Code hook.
+Example: `git status` → `rtk git status` (transparent, 0 tokens overhead)
+
+Refer to CLAUDE.md for full command reference.
+EOF
+        DONE+=("generated ~/.claude/RTK.md")
+    else
+        SKIPPED+=("~/.claude/RTK.md (already exists)")
+    fi
+else
+    SKIPPED+=("~/.claude/RTK.md (rtk not installed)")
+fi
 
 echo "==> Registering GitHub MCP..."
 [ -f "$HOME/.env.local" ] && source "$HOME/.env.local"
 if [[ -n "${GITHUB_PAT:-}" ]]; then
-    maybe_run "register GitHub MCP (github -> api.githubcopilot.com)" \
-        claude mcp add --transport http --scope user github \
-        "https://api.githubcopilot.com/mcp/" \
-        --header "Authorization: Bearer ${GITHUB_PAT}"
+    if claude mcp list 2>/dev/null | grep -q '^github\b'; then
+        SKIPPED+=("GitHub MCP (already registered)")
+    else
+        maybe_run "register GitHub MCP (github -> api.githubcopilot.com)" \
+            claude mcp add --transport http --scope user github \
+            "https://api.githubcopilot.com/mcp/" \
+            --header "Authorization: Bearer ${GITHUB_PAT}"
+    fi
 else
     SKIPPED+=("GitHub MCP (GITHUB_PAT not set — add it to ~/.env.local and re-run)")
 fi

@@ -17,3 +17,44 @@
 **Roadmap sync**: Before opening a PR, mark the corresponding ROADMAP.md item `[x]` and include that change in the feature branch commit so it merges with the work.
 
 **Frontend design**: When creating or significantly redesigning frontend pages or components, invoke the `frontend-design:frontend-design` skill before writing any code.
+
+## Subagent Model Strategy
+
+Default session model: `opusplan`
+- Opus handles planning and architecture decisions
+- Sonnet handles implementation and execution
+- No manual model switching needed for most tasks
+
+### Built-in subagents (automatic, no config needed)
+
+| Agent             | Model   | Tools      | When Claude uses it                        |
+|-------------------|---------|------------|--------------------------------------------|
+| Explore           | Haiku   | Read-only  | grep, glob, find file, symbol lookup       |
+| Plan              | Inherit | Read-only  | codebase research before strategy          |
+| General-purpose   | Inherit | All        | exploration + modification together        |
+| Claude Code Guide | Inherit | Read-only  | questions about Claude Code itself         |
+
+### Custom subagents (`~/.claude/agents/`)
+
+Invoke by typing `@agent-name` in conversation, or they are invoked from slash commands.
+
+| Agent         | Model  | When to use                                      |
+|---------------|--------|--------------------------------------------------|
+| code-reviewer | Sonnet | PR review, post-refactor quality check           |
+| test-writer   | Sonnet | Writing or improving tests for existing code     |
+
+### Effort guidance
+
+Respond without deep thinking for:
+- File reads, searches, directory listings, quick lookups
+
+Use extended thinking for:
+- Architecture decisions, multi-file changes, anything where a wrong
+  first pass is expensive to undo
+
+### Cost rules
+
+- Never route grep/glob/find tasks to Opus — Explore (Haiku) handles these
+- Sonnet handles ~90% of coding tasks without meaningful quality loss vs Opus
+- Opus is reserved for: deep architecture decisions and large multi-file
+  redesigns where correctness on the first pass matters significantly

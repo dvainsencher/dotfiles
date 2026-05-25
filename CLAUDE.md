@@ -44,3 +44,4 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `.claude/settings.local.json` | `~/.claude/settings.local.json` | Claude permissions |
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script |
 | `.claude/commands/` | `~/.claude/commands/` | Claude slash commands |
+| `.claude/agents/` | `~/.claude/agents/` | Custom Claude Code subagents |
