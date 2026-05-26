@@ -23,8 +23,8 @@ Steps:
 1. Find all `*.md` files in the repo (excluding `node_modules`, `.git`)
 2. Read each one to understand what it covers
 3. Scan source files to understand which files/areas each doc tracks
-4. Read the project's `CLAUDE.md` if it exists — avoid duplicating anything already there
-5. Output a `## Documentation` table ready to paste into `CLAUDE.md`:
+4. Read the project's `CLAUDE.md` if it exists — if a `## Documentation` section already exists, output a full updated replacement for it, not an addition
+5. Output a `## Documentation` table ready to paste into (or replace in) `CLAUDE.md`:
 
 ```
 ## Documentation

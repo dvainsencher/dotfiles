@@ -47,7 +47,6 @@ A file is **not** doc-impacting if it only matches skip patterns:
 - Test files: paths containing `test`, `spec`, or `__tests__`
 - CI/tooling: `.github/`, `.gitignore`, `.eslintrc*`, `.prettierrc*`
 - Lock files: `package-lock.json`, `yarn.lock`, `Cargo.lock`
-- Agent/command/hook definitions: `.claude/agents/`, `.claude/commands/`, `.claude/hooks/`
 
 If ALL changed files are non-doc-impacting, print:
 > "Step 3 — No doc-impacting files changed, skipping docs audit."
