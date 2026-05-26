@@ -58,7 +58,7 @@ Then continue to Step 4.
 Get the full diff: `git diff main..HEAD` (or `master..HEAD`).
 
 Use the Agent tool (model: sonnet) with this prompt:
-"You are performing a documentation audit. First read `~/.claude/agents/docs-writer.md` for the audit checklist and output format. Then review this diff to identify any documentation that should be added or updated. If nothing needs updating, say 'Docs are up to date' in one line and stop."
+"You are performing a documentation audit. First read `~/.claude/agents/docs-writer.md` for the audit checklist and output format. Then check if the project's CLAUDE.md contains a `## Documentation` section — if it does, use that inventory to focus your audit on the docs that track the changed files. If no inventory exists, audit broadly. Review this diff to identify any documentation that should be added or updated. If nothing needs updating, say 'Docs are up to date' in one line and stop."
 
 Present the findings to the user. If any outdated or missing docs are found, ask: "Should I update the docs before publishing, or skip?"
 - If yes, make the documentation changes and commit them before continuing.
