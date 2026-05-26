@@ -46,3 +46,17 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `.claude/commands/` | `~/.claude/commands/` | Claude slash commands |
 | `.claude/agents/` | `~/.claude/agents/` | Custom Claude Code subagents |
 | *(generated)* `~/.claude/RTK.md` | — | RTK usage docs, auto-created by `install.sh` if `rtk` is installed |
+
+## Documentation
+
+| Doc | Covers | Update when |
+|-----|--------|-------------|
+| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `gitconfig.local.example` | New dotfile added or removed, symlink targets change, new slash command added, bootstrap package list changes |
+| `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file |
+| `.claude/CLAUDE.md` | Global Claude Code workflow rules, subagent model strategy, `.claude/agents/` agent roster | New agent added, agent model or role changes, workflow rules change |
+| `.claude/commands/README.md` | `.claude/commands/publish.md`, `.claude/commands/roadmap.md`, slash command setup and usage | New command added or removed, setup steps change |
+| `.claude/commands/publish.md` | Full publish workflow — git, `gh pr`, merge strategy, docs audit, code review | Steps added or reordered, doc-impacting file classification changes, subagent prompts change |
+| `.claude/commands/roadmap.md` | `ROADMAP.md` format, per-item detail files, all `/roadmap` modes | New mode added, roadmap format changes |
+| `.claude/agents/docs-writer.md` | Docs-writer agent — Discover, Write, and Audit modes, README and API reference templates | Agent modes change, checklist or templates change |
+| `.claude/agents/code-reviewer.md` | Code-reviewer agent — review checklist and output format | Checklist or output format changes |
+| `.claude/agents/test-writer.md` | Test-writer agent — coverage strategy, rules, output expectations | Coverage strategy or rules change |

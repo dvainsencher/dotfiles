@@ -42,7 +42,7 @@ Invoke by typing `@agent-name` in conversation, or they are invoked from slash c
 |---------------|--------|--------------------------------------------------|
 | code-reviewer | Sonnet | PR review, post-refactor quality check           |
 | test-writer   | Sonnet | Writing or improving tests for existing code     |
-| docs-writer   | Sonnet | Write or audit READMEs and API reference docs    |
+| docs-writer   | Sonnet | Discover doc inventory, write, or audit READMEs and API reference docs |
 
 ### Effort guidance
 
