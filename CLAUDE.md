@@ -19,7 +19,6 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 - `gitconfig` uses `hooksPath = ~/.config/git-hooks` (cloned from `dvainsencher/git-hooks`)
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
-- bash-sensible is inlined directly (no external dependency)
 
 ## bootstrap.sh conventions
 - All installs are idempotent — check before installing, skip if already present
