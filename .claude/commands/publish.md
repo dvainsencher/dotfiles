@@ -1,121 +1,116 @@
 ---
 description: Push branch, create PR, merge with appropriate strategy, and sync main
-allowed-tools: Bash(git *), Bash(gh *), Agent
+allowed-tools: Bash(git *), Bash(gh *), Bash(grep *), Read, Agent
 ---
 
 # Publish Workflow
 
-You are executing a full publish workflow. Follow each step carefully, stop on any error, and always confirm before destructive actions.
+You are executing a fixed publish pipeline. Each step has a defined input and output — run them in sequence, stop on error, and confirm before destructive actions.
 
 ## Step 1 — Check current branch
 
 Run: `git branch --show-current`
 
-If the current branch is **`main`** (or `master`):
-- Inspect the staged/unstaged changes and recent commits to understand what work is being published.
-- Based on that context, suggest a descriptive branch name (e.g. `feat/improve-hero-section`, `fix/cta-text`, `chore/update-dependencies`).
-- Ask the user: "You're on `main`. I suggest creating a new branch `<suggested-name>` before publishing. Create it now, or enter a different name? (Leave blank to push from `main` anyway.)"
-- If the user provides or accepts a branch name, run:
-  ```
-  git checkout -b <branch-name>
-  ```
-  Then continue to Step 2.
-- If the user explicitly chooses to push from `main`, continue to Step 2 without switching branches.
+If the branch is `main` or `master`:
+- Run `git diff HEAD --stat && git log -5 --oneline` to understand the work.
+- Suggest a branch name using prefix `feat/`, `fix/`, or `chore/`.
+- Ask: "You're on `main`. Suggest branch `<name>` — create it, enter a different name, or press enter to push from main anyway."
+- If a name is given: run `git checkout -b <name>` and continue.
+- If blank: continue without switching.
 
 ## Step 2 — Check for uncommitted changes
 
 Run: `git status --short`
 
-If there are uncommitted changes, warn the user and ask whether to:
-- (a) Abort and let them commit first
-- (b) Proceed anyway (only the already-committed changes will be pushed)
+If there are uncommitted changes, warn the user and ask:
+- **(a)** Abort so I can commit first
+- **(b)** Proceed (only committed changes will be pushed)
 
-## Step 3 — Verify documentation
+On (a): stop. On (b): continue.
 
-Run: `git diff main..HEAD --name-only` (or `master..HEAD` if applicable) and `git diff main..HEAD --diff-filter=A --name-only` to see all changed and newly added files.
+## Step 3 — Documentation audit
 
-**Phase 1 — Classify the diff (no subagent):**
+Run:
+```
+git diff main..HEAD --name-only
+git diff main..HEAD --diff-filter=A --name-only
+```
 
-Check whether any changed file is doc-impacting. A file is doc-impacting if it matches ANY of:
-- New files added (any file in `--diff-filter=A` output)
-- Source or scripts: `*.sh`, `*.py`, `*.ts`, `*.js`, files under `src/` or `lib/`
-- Behavior-affecting config: `*.toml`, `*.json` (excluding `package-lock.json`, `yarn.lock`, `Cargo.lock`)
-- Install/setup scripts: `install.sh`, `bootstrap.sh`
-- Existing docs: `*.md` (changes that may drift from code)
+**Phase 1 — Classify (no subagent).** A file is doc-impacting if it matches any of:
+- Any newly added file (`--diff-filter=A` output)
+- `*.sh`, `*.py`, `*.ts`, `*.js`, files under `src/` or `lib/`
+- `*.toml`, `*.json` (excluding `package-lock.json`, `yarn.lock`, `Cargo.lock`)
+- `install.sh`, `bootstrap.sh`
+- Existing `*.md` files
 
-A file is **not** doc-impacting if it only matches skip patterns:
-- Test files: paths containing `test`, `spec`, or `__tests__`
-- CI/tooling: `.github/`, `.gitignore`, `.eslintrc*`, `.prettierrc*`
-- Lock files: `package-lock.json`, `yarn.lock`, `Cargo.lock`
+Not doc-impacting (skip-only): test files, `.github/`, `.gitignore`, `.eslintrc*`, `.prettierrc*`, lock files.
 
-If ALL changed files are non-doc-impacting, print:
-> "Step 3 — No doc-impacting files changed, skipping docs audit."
-Then continue to Step 4.
+If **no** doc-impacting files changed: print `Step 3 — No doc-impacting files changed, skipping docs audit.` and go to Step 4.
 
-**Phase 2 — Docs audit (only if triggered):**
+**Phase 2 — Inline audit (only if triggered).**
 
-Get the full diff: `git diff main..HEAD` (or `master..HEAD`).
-
-Use the Agent tool (model: sonnet) with this prompt:
-"You are performing a documentation audit. First read `~/.claude/agents/docs-writer.md` for the audit checklist and output format. Then check if the project's CLAUDE.md contains a `## Documentation` section — if it does, use that inventory to focus your audit on the docs that track the changed files. If no inventory exists, audit broadly. Review this diff to identify any documentation that should be added or updated. If nothing needs updating, say 'Docs are up to date' in one line and stop."
-
-Present the findings to the user. If any outdated or missing docs are found, ask: "Should I update the docs before publishing, or skip?"
-- If yes, make the documentation changes and commit them before continuing.
-- If no, continue to Step 4.
+1. Run `grep -A 50 "## Documentation" CLAUDE.md` to get the doc inventory table.
+2. Run `git diff main..HEAD` to get the full diff.
+3. Using the inventory table and the diff, map each changed file to the docs that cover it. List:
+   - `<doc-file>` — reason it needs updating
+4. If nothing maps: print `Docs are up to date.` and go to Step 4.
+5. Otherwise show the list and ask: "Update these docs before publishing, or skip?"
+   - Update: make the changes, commit them, then continue.
+   - Skip: go to Step 4.
 
 ## Step 4 — Push the branch
 
 Run: `git push --set-upstream origin $(git branch --show-current)`
 
-If the push fails because the remote already has diverging commits, report the error clearly and ask the user how they want to resolve it (rebase, force-push, or abort). Do NOT force-push without explicit confirmation.
+If the push fails due to diverging commits: report the error and ask whether to rebase, force-push, or abort. Do NOT force-push without explicit confirmation.
 
 ## Step 5 — Create a Pull Request
 
 Run: `gh pr create --fill`
 
-- `--fill` uses the branch name and commit messages to auto-populate title and body.
-- If the command fails because a PR already exists, retrieve its URL with `gh pr view --json url -q .url` and continue to Step 6.
-- If the repo has a PR template, `--fill` will respect it.
+If it fails because a PR already exists: run `gh pr view --json url -q .url` to get the URL.
 
-Capture the PR URL and show it to the user.
+Show the PR URL to the user.
 
-## Step 5.5 — Automated code review
+## Step 5.5 — Code review
 
-Before merging, get an automated review of the PR diff.
+1. Run `gh pr diff` and capture the output.
+2. Read `~/.claude/agents/code-reviewer.md` to get the review checklist.
+3. Read the project's `CLAUDE.md` and extract any project-specific rules.
 
-Run: `gh pr diff`
+Spawn a Sonnet agent with this fully-assembled prompt (substitute actual content for the placeholders):
 
-Use the Agent tool (model: sonnet) with this prompt:
-"You are performing a code review. First read ~/.claude/agents/code-reviewer.md for the review checklist and output format. Then review this GitHub PR diff against that checklist. Also check:
-- Project-specific rules from CLAUDE.md in the working directory (if present)
-- Documentation gaps — public APIs, config options, or new behaviors not documented
+> "Review the diff below against the checklist. Rate each finding: **critical** (block merge), **warning** (should fix), **notice** (optional). If no issues, respond with 'LGTM' only.
+>
+> ## Project-specific rules
+> \<extracted rules from CLAUDE.md\>
+>
+> ## Review checklist
+> \<full contents of code-reviewer.md\>
+>
+> ## Diff
+> \<output of gh pr diff\>"
 
-Rate each finding: **critical** (block merge), **warning** (should fix), **notice** (optional).
-If no issues found, say 'LGTM'."
-
-Present the review to the user. If there are **critical** findings, stop and ask how to proceed before continuing to Step 6.
-
+Present the review to the user. If there are **critical** findings, stop and ask how to proceed before continuing.
 
 ## Step 6 — Choose merge strategy
 
-Inspect the branch name and number of commits to suggest the appropriate strategy, then confirm with the user:
+Run: `git log main..HEAD --oneline` (or `master..HEAD`)
 
-Run: `git log main..HEAD --oneline` (or `master..HEAD` if applicable)
+Apply this decision tree directly:
+- **1 clean commit** → rebase: `gh pr merge --rebase --delete-branch`
+- **Multiple commits on a feature/fix branch** → squash: `gh pr merge --squash --delete-branch`
+- **Long-lived or release branch** → merge commit: `gh pr merge --merge --delete-branch`
 
-**Decision logic:**
-- **Squash merge** (`gh pr merge --squash --delete-branch`) — recommended when there are multiple small/WIP commits on a feature branch (most common for feature work).
-- **Rebase merge** (`gh pr merge --rebase --delete-branch`) — recommended when all commits are clean, well-scoped, and the team values linear history.
-- **Merge commit** (`gh pr merge --merge --delete-branch`) — recommended when preserving full branch history matters (e.g., long-lived release branches).
-
-Present your recommendation with a brief rationale based on commit count and branch name, then ask the user to confirm or choose a different strategy before merging.
+State your recommendation with the commit count, then ask the user to confirm or choose differently before proceeding.
 
 ## Step 7 — Merge the PR
 
-Execute the merge command chosen in Step 6.
+Run the merge command chosen in Step 6.
 
-Wait for the merge to succeed. If it fails (e.g., merge conflicts, required checks failing), report the error and stop — do not attempt to resolve conflicts automatically.
+If it fails (conflicts, required checks): report the error and stop. Do not attempt auto-resolution.
 
-## Step 8 — Switch to main and pull
+## Step 8 — Sync main
 
 Run:
 ```
@@ -123,14 +118,14 @@ git checkout main
 git pull
 ```
 
-Confirm to the user that they are now on an up-to-date `main` branch and show the latest commit with `git log -1 --oneline`.
+Show the latest commit: `git log -1 --oneline`
 
 ---
 
-## Summary output
+## Summary
 
-At the end, print a short summary:
-- Branch published: `<branch-name>`
+Print:
+- Branch: `<branch-name>`
 - PR: `<url>`
-- Merge strategy used: `<squash | rebase | merge>`
+- Merge: `<squash | rebase | merge>`
 - Now on: `main` at `<commit-hash>`
