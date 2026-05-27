@@ -51,7 +51,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 
 | Doc | Covers | Update when |
 |-----|--------|-------------|
-| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `gitconfig.local.example` | New dotfile added or removed, symlink targets change, new slash command added, bootstrap package list changes |
+| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `.claude/agents/`, `gitconfig.local.example` | New dotfile added or removed, symlink targets change, new slash command added, new agent added, bootstrap package list changes |
 | `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file |
 | `.claude/CLAUDE.md` | Global Claude Code workflow rules, subagent model strategy, `.claude/agents/` agent roster | New agent added, agent model or role changes, workflow rules change |
 | `.claude/commands/README.md` | `.claude/commands/publish.md`, `.claude/commands/roadmap.md`, slash command setup and usage | New command added or removed, setup steps change |
