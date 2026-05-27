@@ -50,6 +50,7 @@ gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, 
 | `.claude/settings.local.json` | `~/.claude/settings.local.json` | Tool permissions |
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script (session usage, rate limits) |
 | `.claude/commands/` | `~/.claude/commands/` | Global slash commands |
+| `.claude/agents/` | `~/.claude/agents/` | Custom Claude Code subagents |
 
 ### Slash commands
 
