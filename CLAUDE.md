@@ -20,7 +20,6 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
 - bash-sensible is inlined directly (no external dependency)
-- `~/.claude/commands` is symlinked from `.claude/commands` in this repo
 
 ## bootstrap.sh conventions
 - All installs are idempotent — check before installing, skip if already present
