@@ -5,7 +5,7 @@ description: >
   security issues, code quality, and style consistency. Use for pull request
   reviews, post-refactor checks, or any time code correctness matters.
 model: sonnet
-tools: Read, Grep, Glob, Bash(gh pr diff *)
+tools: Read, Grep, Glob, Bash(gh pr diff *), Bash(ask-kimi *)
 permissionMode: default
 effort: medium
 ---

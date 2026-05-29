@@ -5,7 +5,7 @@ description: >
   docs, and API references. Use after adding new endpoints, changing existing
   APIs, creating new modules, or when docs may be stale relative to the code.
 model: sonnet
-tools: Read, Write, Grep, Glob
+tools: Read, Write, Grep, Glob, Bash(ask-kimi *)
 permissionMode: default
 effort: medium
 ---
