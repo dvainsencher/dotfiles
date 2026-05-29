@@ -127,6 +127,8 @@ else
     if [[ ! -d "$COWORKER_DIR" ]]; then
         maybe_run "clone claude-coworker-model -> $COWORKER_DIR" \
             git clone https://github.com/imkunal007219/claude-coworker-model.git "$COWORKER_DIR"
+        maybe_run "pin claude-coworker-model to 364df1f" \
+            git -C "$COWORKER_DIR" checkout 364df1f28d4f455a588c35158f85d50f18f2d4af
     fi
     maybe_run "install claude-coworker-model tools" \
         bash "$COWORKER_DIR/setup.sh"
