@@ -1,6 +1,6 @@
 ---
 description: Push branch, create PR, merge with appropriate strategy, and sync main
-allowed-tools: Bash(git *), Bash(gh *), Bash(grep *), Read, Agent
+allowed-tools: Bash(git *), Bash(gh *), Bash(grep *), Bash(ask-kimi *), Read, Agent
 ---
 
 # Publish Workflow
