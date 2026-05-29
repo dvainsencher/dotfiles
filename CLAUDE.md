@@ -2,7 +2,7 @@
 
 ## Repo purpose
 Personal dotfiles for Ubuntu/Debian. Two entry points:
-- `install.sh` — symlinks dotfiles, clones git-hooks, creates `~/.gitconfig.local`
+- `install.sh` — symlinks dotfiles, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`
 - `bootstrap.sh` — full fresh-machine setup (packages, tools, fonts, SSH key, then runs install.sh)
 
 ## Commit conventions

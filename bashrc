@@ -63,5 +63,9 @@ export PATH="$HOME/.local/bin:$PATH"
 eval "$(direnv hook bash)"
 eval "$(starship init bash)"
 
-# Local secrets (gitignored) — export GITHUB_PAT, etc.
+# Worker model defaults (set WORKER_API_KEY in ~/.env.local)
+export WORKER_BASE_URL="${WORKER_BASE_URL:-https://api.deepseek.com/v1}"
+export WORKER_MODEL="${WORKER_MODEL:-deepseek-chat}"
+
+# Local secrets (gitignored) — export GITHUB_PAT, WORKER_API_KEY, etc.
 [ -f "$HOME/.env.local" ] && source "$HOME/.env.local"

@@ -119,6 +119,21 @@ else
     SKIPPED+=("GitHub MCP (GITHUB_PAT not set — add it to ~/.env.local and re-run)")
 fi
 
+echo "==> Setting up claude-coworker-model..."
+COWORKER_DIR="$HOME/.local/share/claude-coworker-model"
+if [[ -f "$HOME/.local/bin/ask-kimi" ]]; then
+    SKIPPED+=("claude-coworker-model (ask-kimi already installed)")
+else
+    if [[ ! -d "$COWORKER_DIR" ]]; then
+        maybe_run "clone claude-coworker-model -> $COWORKER_DIR" \
+            git clone https://github.com/imkunal007219/claude-coworker-model.git "$COWORKER_DIR"
+        maybe_run "pin claude-coworker-model to 364df1f" \
+            git -C "$COWORKER_DIR" checkout 364df1f28d4f455a588c35158f85d50f18f2d4af
+    fi
+    maybe_run "install claude-coworker-model tools" \
+        bash "$COWORKER_DIR/setup.sh"
+fi
+
 echo "==> Setting up git-hooks..."
 if [[ ! -d "$HOME/.config/git-hooks" ]]; then
     maybe_run "clone dvainsencher/git-hooks -> ~/.config/git-hooks" \

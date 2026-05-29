@@ -7,7 +7,7 @@ Personal dotfiles for Ubuntu/Debian — shell, git, vim, Starship prompt, direnv
 | Script | Use when |
 |--------|----------|
 | `bootstrap.sh` | Fresh machine — installs packages, tools, fonts, generates SSH key, then runs `install.sh` |
-| `install.sh` | Dotfiles only — symlinks config files, clones git-hooks, creates `~/.gitconfig.local` |
+| `install.sh` | Dotfiles only — symlinks config files, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local` |
 
 ### Bootstrap a fresh machine
 
@@ -33,7 +33,7 @@ gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, 
 
 | File | Symlinked to | Description |
 |------|-------------|-------------|
-| `bashrc` | `~/.bashrc` | Shell config: history, aliases, completion, direnv, Starship prompt |
+| `bashrc` | `~/.bashrc` | Shell config: history, aliases, completion, direnv, Starship prompt, DeepSeek worker defaults |
 | `gitconfig` | `~/.gitconfig` | Aliases (`co`, `br`, `ci`, `st`, `lg`, `ps`, `pl`), colors, hooks |
 | `gitconfig.local.example` | — | Template for `~/.gitconfig.local` (name + email, not tracked) |
 | `vimrc` | `~/.vimrc` | Indentation, search, statusline, paste toggle |
@@ -60,6 +60,16 @@ gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, 
 | `/roadmap` | Manage a project roadmap — view next steps, track status, add items, plan implementation detail |
 
 Run `/roadmap` with no args to see what's next, or pass natural language: `what's next`, `status`, `plan <item>`, etc. If no `ROADMAP.md` exists it walks you through creating one.
+
+## Cheap-worker delegation (DeepSeek)
+
+`install.sh` installs [claude-coworker-model](https://github.com/imkunal007219/claude-coworker-model) — three CLI tools (`ask-kimi`, `kimi-write`, `extract-chat`) that delegate bulk file reading and boilerplate generation to DeepSeek, saving Claude tokens.
+
+`bashrc` exports `WORKER_BASE_URL` and `WORKER_MODEL` defaults. Add your API key to `~/.env.local` (already sourced by `bashrc`, not tracked by git):
+
+```sh
+export WORKER_API_KEY="your-deepseek-key"
+```
 
 ## Personal git identity
 

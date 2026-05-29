@@ -18,6 +18,40 @@
 
 **Frontend design**: When creating or significantly redesigning frontend pages or components, invoke the `frontend-design:frontend-design` skill before writing any code.
 
+## Cheap-Worker Delegation
+
+Three CLI tools delegate bulk I/O to DeepSeek to save Claude tokens. Use them
+when the task is mostly reading or generating boilerplate, not reasoning.
+
+### ask-kimi — bulk reading
+For reading files >400 lines, or when you'd otherwise read 3+ files:
+
+```bash
+ask-kimi --paths <file1> <file2>... --question "<specific question>"
+```
+
+Returns a structured summary. Use that instead of reading files directly.
+Only read files yourself when you need exact line numbers for editing.
+
+### kimi-write — boilerplate generation
+For generating tests, config files, or repetitive code patterns:
+
+```bash
+kimi-write --spec "<what to write>" --context <existing-similar-file> --target <output-path>
+```
+
+### extract-chat — chat transcript extraction
+Converts a Claude Code JSONL session log to human-readable text:
+
+```bash
+extract-chat <session.jsonl> -o /tmp/chat.txt
+```
+
+### When NOT to delegate
+- Tasks under ~2000 tokens (overhead not worth it)
+- Architecture decisions, debugging, safety-critical code
+- When exact line numbers are needed for editing
+
 ## Subagent Model Strategy
 
 Default session model: `opusplan`
