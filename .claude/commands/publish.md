@@ -78,11 +78,11 @@ Do NOT run `gh pr diff` yourself — the diff bytes should never enter the main 
 
 1. Capture the PR number: `gh pr view --json number -q .number`.
 2. Read `~/.claude/agents/code-reviewer.md` to get the review checklist.
-3. Read the project's `CLAUDE.md` and extract any project-specific rules.
+3. Read `CLAUDE.md` in the project root (not `~/.claude/CLAUDE.md`) and extract any project-specific rules.
 
 Spawn a Sonnet agent with this fully-assembled prompt (substitute actual content for the placeholders):
 
-> "Review PR #\<number\> against the checklist. Fetch the diff yourself by running `gh pr diff \<number\>`. Rate each finding: **critical** (block merge), **warning** (should fix), **notice** (optional). If no issues, respond with 'LGTM' only.
+> "Review PR #\<number\> against the checklist. Fetch the diff yourself by running `gh pr diff \<number\>`. Rate each finding: **critical** (block merge), **warning** (should fix), **suggestion** (optional). If no issues, respond with 'LGTM' only.
 >
 > ## Project-specific rules
 > \<extracted rules from CLAUDE.md\>
