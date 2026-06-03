@@ -76,12 +76,14 @@ Show the PR URL to the user.
 
 Run:
 ```
-gh pr checks --watch --fail-fast
+PR_NUM=$(gh pr view --json number -q .number)
+while gh pr checks "$PR_NUM" | grep -q "pending"; do sleep 15; done
+gh pr checks "$PR_NUM"
 ```
 
-`--watch` blocks until every check finishes; `--fail-fast` exits immediately on the first failure.
-- Exit code 0: all checks passed — continue to Step 5.6.
-- Exit code non-zero: show the output, report which check failed, and stop. Do not proceed to review or merge.
+Poll every 15 seconds until no checks remain pending, then print the final status.
+- If all checks show `pass`: continue to Step 5.6.
+- If any check shows `fail`: report which check failed and stop. Do not proceed to review or merge.
 
 ## Step 5.6 — Code review
 
