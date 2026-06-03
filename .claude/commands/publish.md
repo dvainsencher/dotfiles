@@ -77,7 +77,7 @@ Show the PR URL to the user.
 Run:
 ```
 PR_NUM=$(gh pr view --json number -q .number)
-while gh pr checks "$PR_NUM" 2>&1 | grep -q "pending"; do sleep 15; done
+while gh pr checks "$PR_NUM" | grep -q "pending"; do sleep 15; done
 gh pr checks "$PR_NUM"
 ```
 
