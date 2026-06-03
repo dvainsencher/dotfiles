@@ -72,7 +72,19 @@ If it fails because a PR already exists: run `gh pr view --json url -q .url` to 
 
 Show the PR URL to the user.
 
-## Step 5.5 — Code review
+## Step 5.5 — Wait for CI
+
+Run:
+```
+PR_NUM=$(gh pr view --json number -q .number)
+gh pr checks "$PR_NUM" --watch --fail-fast
+```
+
+`--watch` blocks until every check finishes; `--fail-fast` exits immediately on the first failure.
+- Exit code 0: all checks passed — continue to Step 5.6.
+- Exit code non-zero: show the output, report which check failed, and stop. Do not proceed to review or merge.
+
+## Step 5.6 — Code review
 
 Do NOT run `gh pr diff` yourself — the diff bytes should never enter the main context. Let the subagent fetch them.
 
