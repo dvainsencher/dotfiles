@@ -51,6 +51,7 @@ gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, 
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script (session usage, rate limits) |
 | `.claude/commands/` | `~/.claude/commands/` | Global slash commands |
 | `.claude/agents/` | `~/.claude/agents/` | Custom Claude Code subagents |
+| `.claude/hooks/env-loader.sh` | `~/.claude/hooks/env-loader.sh` | Pre-tool-use hook: prepends `source ~/.env.local` to bash commands |
 
 ### Slash commands
 
