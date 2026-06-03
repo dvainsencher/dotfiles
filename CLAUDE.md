@@ -43,6 +43,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script |
 | `.claude/commands/` | `~/.claude/commands/` | Claude slash commands |
 | `.claude/agents/` | `~/.claude/agents/` | Custom Claude Code subagents |
+| `.claude/hooks/env-loader.sh` | `~/.claude/hooks/env-loader.sh` | Pre-tool-use hook: prepends `source ~/.env.local` to bash commands |
 | *(generated)* `~/.claude/RTK.md` | — | RTK usage docs, auto-created by `install.sh` if `rtk` is installed |
 
 ## Documentation

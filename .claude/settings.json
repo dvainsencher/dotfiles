@@ -6,6 +6,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "/home/daniel/.claude/hooks/env-loader.sh"
+          },
+          {
+            "type": "command",
             "command": "/home/daniel/.claude/hooks/rtk-rewrite.sh"
           }
         ]
