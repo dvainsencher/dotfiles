@@ -14,5 +14,5 @@ if [ -z "$CMD" ]; then
   exit 0
 fi
 
-jq -cn --arg cmd "source ~/.env.local 2>/dev/null; $CMD" \
-  '{hookSpecificOutput: {hookEventName: "PreToolUse", updatedInput: {command: $cmd}}}'
+jq -c --arg cmd "source ~/.env.local 2>/dev/null; $CMD" \
+  '.tool_input.command = $cmd | {hookSpecificOutput: {hookEventName: "PreToolUse", updatedInput: .tool_input}}' <<<"$INPUT"

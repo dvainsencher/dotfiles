@@ -76,8 +76,7 @@ Show the PR URL to the user.
 
 Run:
 ```
-PR_NUM=$(gh pr view --json number -q .number)
-gh pr checks "$PR_NUM" --watch --fail-fast
+gh pr checks --watch --fail-fast
 ```
 
 `--watch` blocks until every check finishes; `--fail-fast` exits immediately on the first failure.
