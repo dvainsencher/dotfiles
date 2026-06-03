@@ -58,6 +58,24 @@ If **no** doc-impacting files changed: print `Step 3 — No doc-impacting files 
    - Update: make the changes, commit them, then continue.
    - Skip: go to Step 4.
 
+## Step 3.5 — Local verification gate
+
+Before pushing, verify the work builds and passes tests **locally** — catch failures
+in seconds instead of after a full CI/deploy round-trip. Use the changed-file list
+from Step 3 and run only the checks that match (skip those that don't apply):
+
+- Backend / Python (`*.py`, `src/`, `tests/`): the project's test command, e.g.
+  `source venv/bin/activate && pytest -q`.
+- Frontend (`frontend/**`, `*.ts`, `*.tsx`, `package.json`): the project's build +
+  test, e.g. `cd frontend && npm run build && npm test`.
+- GitHub Actions workflows (`.github/workflows/*.yml`): the project's workflow
+  linter, e.g. `~/.local/bin/actionlint`.
+
+Consult the project's `CLAUDE.md` for the exact commands; the above are defaults.
+
+If a matching check **fails**: STOP. Report it and fix before pushing — never push
+known-broken work. If the project defines no matching toolchain, note that and continue.
+
 ## Step 4 — Push the branch
 
 Run: `git push --set-upstream origin $(git branch --show-current)`
@@ -86,6 +104,11 @@ Poll every 15 seconds until no checks remain pending, then print the final statu
 - If any check shows `fail`: report which check failed and stop. Do not proceed to review or merge.
 
 ## Step 5.6 — Code review
+
+**Scale review to risk.** Skip the code-review subagent for pure docs/config/whitespace
+diffs (no `*.py`/`*.ts`/`*.js`/`src/`/`lib/`/IaC changes) — do a one-line inline sanity
+check instead and continue. Always run the subagent for code, logic, or infrastructure
+changes.
 
 Do NOT run `gh pr diff` yourself — the diff bytes should never enter the main context. Let the subagent fetch them.
 

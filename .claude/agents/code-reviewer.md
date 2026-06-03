@@ -26,6 +26,13 @@ ask-kimi --paths <file1> <file2> ... --question "<specific question>"
 3. **Quality** — readability, naming, complexity, duplication (DRY)
 4. **Conventions** — does this match the patterns already in the codebase?
 5. **Test coverage** — are the important paths covered?
+6. **Build & config correctness** — would this fail to compile/typecheck? Does it
+   call library or SDK APIs that actually exist in the version the project pins
+   (e.g. a v5 major)? For IAM/permission changes: do the granted actions match what
+   the code calls, and do the referenced actions/resources exist? For IaC
+   (CloudFormation/SAM/Terraform/CDK): are referenced resources, outputs, and env
+   vars actually defined — and is any value used at build/deploy time that only
+   exists *after* deploy (a circular dependency)?
 
 ## Output format
 

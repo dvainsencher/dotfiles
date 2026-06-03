@@ -29,9 +29,10 @@
     "type": "command",
     "command": "bash /home/daniel/.claude/statusline-command.sh"
   },
-  "theme": "dark-daltonized",
-  "skipAutoPermissionPrompt": true,
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true
-  }
+  },
+  "theme": "dark-daltonized",
+  "skipAutoPermissionPrompt": true,
+  "model": "opus"
 }

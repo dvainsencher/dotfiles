@@ -33,6 +33,10 @@ ask-kimi --paths <file1> <file2>... --question "<specific question>"
 Returns a structured summary. Use that instead of reading files directly.
 Only read files yourself when you need exact line numbers for editing.
 
+**Propagate to subagents.** When you spawn an Explore or research agent over large
+files or logs, instruct it in the prompt to use `ask-kimi`/`extract-chat` for the
+bulk reading — keep raw bytes out of the *subagent's* context too, not just yours.
+
 ### kimi-write — boilerplate generation
 For generating tests, config files, or repetitive code patterns:
 
@@ -93,3 +97,5 @@ Use extended thinking for:
 - Sonnet handles ~90% of coding tasks without meaningful quality loss vs Opus
 - Opus is reserved for: deep architecture decisions and large multi-file
   redesigns where correctness on the first pass matters significantly
+- Boilerplate *writing* (docs, tests, config) → `kimi-write`. Reserve Opus for
+  reasoning (architecture, diagnosis, multi-file correctness), not transcription
