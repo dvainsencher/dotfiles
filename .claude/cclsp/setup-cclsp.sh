@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # =============================================================================
-# setup-cclsp.sh — Install cclsp MCP server and required LSP servers
+# setup-cclsp.sh — Register cclsp as a global Claude Code MCP server
 #
 # Called by install.sh, or run directly:
 #   bash ~/dotfiles/.claude/cclsp/setup-cclsp.sh
 #
 # What this does:
-#   1. Installs LSP servers (pylsp, typescript-language-server, bash-language-server)
-#   2. Copies cclsp.json to ~/.config/claude/cclsp.json  (global fallback config)
-#   3. Registers cclsp as a user-scoped Claude Code MCP server
+#   1. Copies cclsp.json to ~/.config/claude/cclsp.json  (global fallback config)
+#   2. Registers cclsp as a user-scoped Claude Code MCP server
+#
+# LSP servers are invoked on-demand via npx/uvx — no system-level install needed.
 #
 # Per-project use: add a .claude/.mcp.json that sets CCLSP_CONFIG_PATH to the
-# project-local cclsp.json (relative to project root).  The user-scoped MCP
+# project-local cclsp.json (relative to project root). The user-scoped MCP
 # registration done here serves as the fallback for repos without a project config.
 # =============================================================================
 
@@ -29,40 +30,7 @@ echo ""
 echo "=== cclsp setup ==="
 echo ""
 
-# ── 1. LSP servers ──────────────────────────────────────────────────────────
-
-echo "[ LSP servers ]"
-
-# Python
-if command -v pylsp &>/dev/null; then
-  ok "pylsp already installed ($(pylsp --version 2>&1 | head -1))"
-else
-  log "Installing python-lsp-server..."
-  pip install "python-lsp-server[all]" --break-system-packages --quiet
-  ok "pylsp installed"
-fi
-
-# TypeScript / JavaScript
-if command -v typescript-language-server &>/dev/null; then
-  ok "typescript-language-server already installed"
-else
-  log "Installing typescript-language-server..."
-  npm install -g typescript-language-server typescript --silent
-  ok "typescript-language-server installed"
-fi
-
-# Bash
-if command -v bash-language-server &>/dev/null; then
-  ok "bash-language-server already installed"
-else
-  log "Installing bash-language-server..."
-  npm install -g bash-language-server --silent
-  ok "bash-language-server installed"
-fi
-
-echo ""
-
-# ── 2. cclsp global config ─────────────────────────────────────────────────
+# ── 1. cclsp global config ─────────────────────────────────────────────────
 
 echo "[ cclsp global config ]"
 

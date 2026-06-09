@@ -2,16 +2,16 @@
   "servers": [
     {
       "extensions": ["py", "pyi"],
-      "command": ["pylsp"],
+      "command": ["uvx", "--from", "python-lsp-server", "pylsp"],
       "restartInterval": 5
     },
     {
       "extensions": ["ts", "tsx", "js", "jsx", "mjs", "cjs"],
-      "command": ["typescript-language-server", "--stdio"]
+      "command": ["npx", "--yes", "typescript-language-server", "--stdio"]
     },
     {
       "extensions": ["sh", "bash", "zsh"],
-      "command": ["bash-language-server", "start"]
+      "command": ["npx", "--yes", "bash-language-server", "start"]
     }
   ]
 }
