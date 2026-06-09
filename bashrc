@@ -69,3 +69,7 @@ export WORKER_MODEL="${WORKER_MODEL:-deepseek-chat}"
 
 # Local secrets (gitignored) — export GITHUB_PAT, WORKER_API_KEY, etc.
 [ -f "$HOME/.env.local" ] && source "$HOME/.env.local"
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/daniel/.local/bin:$PATH"
