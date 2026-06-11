@@ -73,3 +73,4 @@ export WORKER_MODEL="${WORKER_MODEL:-deepseek-chat}"
 
 # Added by Antigravity CLI installer
 export PATH="/home/daniel/.local/bin:$PATH"
+export PATH="$HOME/.npm-global/bin:$PATH"
