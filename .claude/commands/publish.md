@@ -50,11 +50,12 @@ If **no** doc-impacting files changed: print `Step 3 — No doc-impacting files 
 **Phase 2 — Inline audit (only if triggered).**
 
 1. Run `grep -A 50 "## Documentation" CLAUDE.md` to get the doc inventory table.
-2. Run `git diff main..HEAD` to get the full diff.
-3. Using the inventory table and the diff, map each changed file to the docs that cover it. List:
+2. Using the inventory table and the changed-file list from Phase 1 (paths only —
+   do not read the full diff into this context), map each changed file to the
+   docs that cover it by path/pattern. List:
    - `<doc-file>` — reason it needs updating
-4. If nothing maps: print `Docs are up to date.` and go to Step 4.
-5. Otherwise show the list and ask: "Update these docs before publishing, or skip?"
+3. If nothing maps: print `Docs are up to date.` and go to Step 4.
+4. Otherwise show the list and ask: "Update these docs before publishing, or skip?"
    - Update: make the changes, commit them, then continue.
    - Skip: go to Step 4.
 
@@ -103,30 +104,52 @@ Poll every 15 seconds until no checks remain pending, then print the final statu
 - If all checks show `pass`: continue to Step 5.6.
 - If any check shows `fail`: report which check failed and stop. Do not proceed to review or merge.
 
-## Step 5.6 — Code review
+## Step 5.6 — Triage-routed code review
 
-**Scale review to risk.** Skip the code-review subagent for pure docs/config/whitespace
-diffs (no `*.py`/`*.ts`/`*.js`/`src/`/`lib/`/IaC changes) — do a one-line inline sanity
-check instead and continue. Always run the subagent for code, logic, or infrastructure
-changes.
+Do NOT run `gh pr diff` yourself — the diff bytes should never enter the main context.
 
-Do NOT run `gh pr diff` yourself — the diff bytes should never enter the main context. Let the subagent fetch them.
+### 5.6.1 — Triage (Haiku, near-zero cost)
 
+Run the following two commands and pass their output to a `review-triage` agent:
+
+```
+git diff main..HEAD --stat
+git diff main..HEAD --name-only
+```
+
+The triage agent responds with exactly one line: `ROUTE: <skip|standard|deep> — <reason>`.
+
+### 5.6.2 — Act on the route
+
+**`ROUTE: skip`**
+Print: `Step 5.6 — Review skipped: <triage reason>` and go to Step 6.
+
+**`ROUTE: standard`**
 1. Capture the PR number: `gh pr view --json number -q .number`.
 2. Read `~/.claude/agents/code-reviewer.md` to get the review checklist.
 3. Read `CLAUDE.md` in the project root (not `~/.claude/CLAUDE.md`) and extract any project-specific rules.
+4. Spawn one Sonnet `code-reviewer` agent with this fully-assembled prompt:
 
-Spawn a Sonnet agent with this fully-assembled prompt (substitute actual content for the placeholders):
+   > "Review PR #\<number\>. Fetch the diff yourself by running `gh pr diff \<number\>`.
+   > Apply **all 8 lenses** from the review checklist (lenses 7–8 are conditional on
+   > whether the diff modifies existing lines — check before using them).
+   >
+   > ## Project-specific rules
+   > \<extracted rules from CLAUDE.md\>
+   >
+   > ## Review checklist
+   > \<full contents of code-reviewer.md\>"
 
-> "Review PR #\<number\> against the checklist. Fetch the diff yourself by running `gh pr diff \<number\>`. Rate each finding: **critical** (block merge), **warning** (should fix), **suggestion** (optional). If no issues, respond with 'LGTM' only.
->
-> ## Project-specific rules
-> \<extracted rules from CLAUDE.md\>
->
-> ## Review checklist
-> \<full contents of code-reviewer.md\>"
+5. Present findings to the user. If there are **🔴 Critical** findings: stop and ask how to proceed before continuing.
 
-Present the review to the user. If there are **critical** findings, stop and ask how to proceed before continuing.
+**`ROUTE: deep`**
+1. Follow the same steps 1–5 as `standard` above (local fast-feedback review first).
+2. After presenting findings (stop on 🔴 as above), also apply the `deep-review` label:
+   ```
+   gh pr edit --add-label deep-review
+   ```
+3. Inform the user: "Deep-review label applied — the CI review backstop will run asynchronously on this PR."
+4. Continue to Step 6 without waiting for CI.
 
 ## Step 6 — Choose merge strategy
 

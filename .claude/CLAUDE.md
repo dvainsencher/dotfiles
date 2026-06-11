@@ -4,11 +4,16 @@
 
 **Branch first**: Before making any code change, propose a branch name and create it. Use prefixes `feat/`, `fix/`, `chore/`. If the planned work spans multiple roadmap items, suggest splitting into separate focused PRs and propose an order based on ROADMAP.md priority.
 
-**Publish on completion**: After finishing a feature or fix, immediately run `/publish` to push, open a PR, get it reviewed, and merge. Do not accumulate uncommitted work.
+**Publish on completion**: Commit locally as you go. Run `/publish` once per coherent,
+shippable unit of work (matching the project's "complete units, not minimal diffs" PR
+guidance) — not after every small edit. Each `/publish` pays for a CI wait and a
+Sonnet code review, so batch related changes into one PR rather than a string of
+tiny ones. Do not accumulate *uncommitted* work, but accumulating local commits on
+a branch until the unit is done is expected.
 
 **Docs check**: The `/publish` workflow includes a documentation review step. Update any docs that describe changed behavior before the PR is created.
 
-**PR review**: The `/publish` workflow includes an automated code review step. If the review finds critical issues, resolve them before merging.
+**PR review**: The `/publish` workflow includes a triage-routed code review (Step 5.6). A Haiku triage agent reads the diff stat and file names, then routes to one of three paths: `skip` (docs/config/lockfiles only), `standard` (one Sonnet reviewer applying all five lenses), or `deep` (standard review + `deep-review` label applied so the CI backstop runs asynchronously). If the review finds 🔴 critical issues, resolve them before merging. Do not invoke `/code-review` manually on every PR — the triage router decides depth automatically.
 
 **TDD**: Write the test first, implement the minimum to pass, run once to confirm green.
 
@@ -17,6 +22,10 @@
 **Roadmap sync**: Before opening a PR, mark the corresponding ROADMAP.md item `[x]` and include that change in the feature branch commit so it merges with the work.
 
 **Frontend design**: When creating or significantly redesigning frontend pages or components, invoke the `frontend-design:frontend-design` skill before writing any code.
+
+**Context hygiene**: Before a large multi-file task, run `/context` to see what's
+consuming the window; check `/usage` periodically to track spend. Cheapest way to
+catch bloat early instead of after the session has already ballooned.
 
 ## Development Principles
 
@@ -99,12 +108,15 @@ Boilerplate *writing* (docs, tests, config) → `kimi-write`. Reserve Opus for r
 
 ### Tier 3 — Opus (deep reasoning only)
 
-Default session model: `opusplan` (Opus plans/architects, Sonnet executes).
+Default session model: `sonnet`. Switch to Opus on demand (`/model opus`, or a
+plan-mode pass) — don't leave it on as the default, it's the most expensive tier.
 
 Use Opus for:
 - Deep architecture decisions
 - Large multi-file redesigns where a wrong first pass is expensive to undo
 - Multi-step correctness reasoning across files
+- Anything touching `src/core/fiscal_authority.py` or `docs/fiscal/` — fiscal
+  rule changes are high-stakes and worth the extra reasoning depth
 
 **Effort guidance:**
 - Respond without deep thinking for: file reads, searches, directory listings, quick lookups.
@@ -114,10 +126,29 @@ Use Opus for:
 
 ## Subagent Model Strategy
 
-Default session model: `opusplan`
-- Opus handles planning and architecture decisions
-- Sonnet handles implementation and execution
-- No manual model switching needed for most tasks
+Default session model: `sonnet` for both planning and execution.
+- Switch to Opus deliberately for the cases listed in Tier 3 (deep architecture,
+  large multi-file redesigns, fiscal logic) — not as a standing default.
+- Subagents keep their own `model:` frontmatter (Haiku for triage/Explore, Sonnet
+  for code-reviewer/test-writer/docs-writer) regardless of the session model.
+
+### When to spawn a subagent at all
+
+Subagents aren't automatically cheaper — their startup + tool-definition overhead
+can exceed the savings on small jobs. Spawn one only when it earns its keep:
+- You'd otherwise read **3+ files or >400 lines** into the main context, or
+- You need to isolate bulk/noisy output (logs, diffs, search sweeps) that the
+  parent doesn't need verbatim.
+
+For a quick lookup, single-file edit, or one-shot command, do it inline — don't
+delegate for delegation's sake.
+
+**Subagents must not re-derive context the parent already holds.** Don't have a
+subagent `cat`/read `CLAUDE.md`, agent definition files, or other config the
+parent has already read — pass the relevant conclusions in the prompt instead.
+Combined with the payload-discipline rule (hand over commands/paths, not pasted
+bytes — see memory `feedback-subagent-payload-discipline`), this keeps the same
+bytes from occupying two contexts in either direction.
 
 ### Custom subagents (`~/.claude/agents/`)
 
