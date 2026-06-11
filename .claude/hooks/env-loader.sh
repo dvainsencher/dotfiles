@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Prepends "source ~/.env.local" to every bash command so worker tools
-# (ask-kimi, kimi-write, extract-chat) have WORKER_API_KEY etc. available.
+# Prepends "source ~/.env.local" ONLY to commands that invoke a worker tool
+# (ask-kimi, kimi-write, extract-chat), so they have WORKER_API_KEY etc. — without
+# adding the source to every unrelated command (which is noise and wasted work).
 # Safe to commit — contains no secrets; ~/.env.local is private.
 
 if ! command -v jq &>/dev/null; then
@@ -11,6 +12,11 @@ INPUT=$(cat)
 CMD=$(jq -r '.tool_input.command // empty' <<<"$INPUT")
 
 if [ -z "$CMD" ]; then
+  exit 0
+fi
+
+# Leave commands that don't use a worker tool untouched.
+if ! grep -Eq '(ask-kimi|kimi-write|extract-chat)' <<<"$CMD"; then
   exit 0
 fi
 

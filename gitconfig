@@ -25,3 +25,6 @@
     lg = log --oneline --graph --decorate
     ps = push
     pl = pull
+[user]
+	name = Daniel Vainsencher Maya Monteiro
+	email = 269595+dvainsencher@users.noreply.github.com

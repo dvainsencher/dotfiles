@@ -21,9 +21,9 @@ ask-kimi --paths <file1> <file2> ... --question "<specific question>"
 
 ## Review checklist
 
-1. **Correctness** — bugs, logic errors, off-by-one, unhandled edge cases
+1. **Correctness** — bugs, logic errors, off-by-one, unhandled edge cases, root causes, not workarounds
 2. **Security** — injection, auth bypass, data exposure, unsafe deserialization
-3. **Quality** — readability, naming, complexity, duplication (DRY)
+3. **Quality** — readability, naming, complexity, duplication (DRY), dead code cleaning
 4. **Conventions** — does this match the patterns already in the codebase?
 5. **Test coverage** — are the important paths covered?
 6. **Build & config correctness** — would this fail to compile/typecheck? Does it
