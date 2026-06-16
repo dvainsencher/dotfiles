@@ -61,14 +61,18 @@ If **no** doc-impacting files changed: print `Step 3 — No doc-impacting files 
 
 ## Step 3.5 — Local verification gate
 
-Before pushing, verify the work builds and passes tests **locally** — catch failures
-in seconds instead of after a full CI/deploy round-trip. Use the changed-file list
-from Step 3 and run only the checks that match (skip those that don't apply):
+**If the project has a pre-push hook** (check `.git/hooks/pre-push`): skip this
+step entirely — the hook runs the same checks automatically when Step 4 pushes.
+Note that to the user and continue.
+
+**If there is no pre-push hook**: verify the work builds and passes tests locally
+before pushing. Use the changed-file list from Step 3 and run only the checks that
+match (skip those that don't apply):
 
 - Backend / Python (`*.py`, `src/`, `tests/`): the project's test command, e.g.
-  `source venv/bin/activate && pytest -q`.
+  `venv/bin/pytest -q`.
 - Frontend (`frontend/**`, `*.ts`, `*.tsx`, `package.json`): the project's build +
-  test, e.g. `cd frontend && npm run build && npm test`.
+  test, e.g. `cd frontend && npm test`.
 - GitHub Actions workflows (`.github/workflows/*.yml`): the project's workflow
   linter, e.g. `~/.local/bin/actionlint`.
 
@@ -131,7 +135,7 @@ Print: `Step 5.6 — Review skipped: <triage reason>` and go to Step 6.
 4. Spawn one Sonnet `code-reviewer` agent with this fully-assembled prompt:
 
    > "Review PR #\<number\>. Fetch the diff yourself by running `gh pr diff \<number\>`.
-   > Apply **all 8 lenses** from the review checklist (lenses 7–8 are conditional on
+   > Apply **all lenses** from the review checklist (lenses 7–9 are conditional on
    > whether the diff modifies existing lines — check before using them).
    >
    > ## Project-specific rules
@@ -148,7 +152,7 @@ Print: `Step 5.6 — Review skipped: <triage reason>` and go to Step 6.
    ```
    gh pr edit --add-label deep-review
    ```
-3. Inform the user: "Deep-review label applied — the CI review backstop will run asynchronously on this PR."
+3. Inform the user: "Deep-review label applied — no async CI backstop is deployed; the local review above is the sole backstop."
 4. Continue to Step 6 without waiting for CI.
 
 ## Step 6 — Choose merge strategy
