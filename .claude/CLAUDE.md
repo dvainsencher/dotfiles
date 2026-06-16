@@ -27,6 +27,21 @@ a branch until the unit is done is expected.
 consuming the window; check `/usage` periodically to track spend. Cheapest way to
 catch bloat early instead of after the session has already ballooned.
 
+## Sprint Workflow
+
+**Read sprint items** from `docs/sprints.md`. For any item that explicitly requires
+planning, or where you are not 95% confident in scope or approach, use
+`AskUserQuestion` to interview the user before starting — even in auto-mode. If it
+is not obvious which items to work on, ask. Otherwise work through all of them.
+
+**Work on sprint items** following the branch-first, TDD, and publish workflow in
+this file. Roadmap and sprint doc updates belong in the same branch as the code —
+not a separate commit.
+
+**Before pushing**, mark each completed item `[x]` in `ROADMAP.md` (root). If all
+sprint items are done, also add `✅` to the sprint header in `docs/sprints.md`.
+Include both files in the PR.
+    
 ## Development Principles
 
 **If there is a bug there should have a test to prevent it to happens in the future.**
