@@ -2,7 +2,7 @@
 
 ## Workflow
 
-**Branch first**: Before making any code change, propose a branch name and create it. Use prefixes `feat/`, `fix/`, `chore/`. If the planned work spans multiple roadmap items, suggest splitting into separate focused PRs and propose an order based on ROADMAP.md priority.
+**Branch first**: Before making any code change, propose a branch name and create it. Use prefixes `feat/`, `fix/`, `chore/`. If the planned work spans multiple roadmap items, suggest splitting into separate focused PRs and propose an order based on priority — if the project tracks work with `pauta` (a `docs/roadmap/issues.jsonl` exists, or the project's own CLAUDE.md says so), read that priority from `pauta show`; otherwise from ROADMAP.md.
 
 **Publish on completion**: Commit locally as you go. Run `/publish` once per coherent,
 shippable unit of work (matching the project's "complete units, not minimal diffs" PR
@@ -13,13 +13,18 @@ a branch until the unit is done is expected.
 
 **Docs check**: The `/publish` workflow includes a documentation review step. Update any docs that describe changed behavior before the PR is created.
 
-**PR review**: The `/publish` workflow includes a triage-routed code review (Step 5.6). A Haiku triage agent reads the diff stat and file names, then routes to one of three paths: `skip` (docs/config/lockfiles only), `standard` (one Sonnet reviewer applying all five lenses), or `deep` (standard review + `deep-review` label applied so the CI backstop runs asynchronously). Review principles: They should always be evaluated and criticized. If they are relevant no matter how critical they are they should be resolved before merging or planned for later using roadmap skill. Do not sweep technical debt or improvements unbder the rug. The rule of thumb to resolve now or later is if their scope is too large or risky to be adressed togheter with the current context. If they are not relevant or you disagree explicit it and don't work in the reviewer issue. Do not invoke `/code-review` manually on every PR — the triage router decides depth automatically.
+**PR review**: The `/publish` workflow includes a triage-routed code review (Step 5.6). A Haiku triage agent reads the diff stat and file names, then routes to one of three paths: `skip` (docs/config/lockfiles only), `standard` (one Sonnet reviewer applying all five lenses), or `deep` (standard review + `deep-review` label applied so the CI backstop runs asynchronously). Review principles: They should always be evaluated and criticized. If they are relevant no matter how critical they are they should be resolved before merging or planned for later — via the `roadmap` skill, or via `pauta-add-issue`/`pauta` directly if the project tracks work with pauta instead. Do not sweep technical debt or improvements unbder the rug. The rule of thumb to resolve now or later is if their scope is too large or risky to be adressed togheter with the current context. If they are not relevant or you disagree explicit it and don't work in the reviewer issue. Do not invoke `/code-review` manually on every PR — the triage router decides depth automatically.
 
 **TDD**: Write the test first, implement the minimum to pass, run once to confirm green.
 
 **Bug fix TDD**: When you find a bug, first write a failing test that reproduces it, then fix the code, then run the test again to confirm it's green. Never fix a bug without a test.
 
-**Roadmap sync**: Before opening a PR, mark the corresponding ROADMAP.md item `[x]` and include that change in the feature branch commit so it merges with the work.
+**Roadmap sync**: Before opening a PR, mark the corresponding item done. If the
+project tracks work with `pauta` (a `docs/roadmap/issues.jsonl` exists, or the
+project's own CLAUDE.md points at pauta), run `pauta set-status <id> done`
+instead of editing any file directly — pauta's CLI is the only writer to its own
+`docs/roadmap/*`. Otherwise, mark the corresponding ROADMAP.md item `[x]` and
+include that change in the feature branch commit so it merges with the work.
 
 **Frontend design**: When creating or significantly redesigning frontend pages or components, invoke the `frontend-design:frontend-design` skill before writing any code.
 
@@ -28,6 +33,12 @@ consuming the window; check `/usage` periodically to track spend. Cheapest way t
 catch bloat early instead of after the session has already ballooned.
 
 ## Sprint Workflow
+
+**Pauta-managed projects skip this section.** If the project tracks work with
+`pauta` (a `docs/roadmap/issues.jsonl` exists, or the project's own CLAUDE.md
+points at pauta), use `pauta show` to read backlog/sprint state and the
+`pauta-po`/`pauta-suggest-batches`/etc. skills to plan and reorganize — don't read
+or write `docs/sprints.md`/`ROADMAP.md` for that project at all.
 
 **Read sprint items** from `docs/sprints.md`. For any item that explicitly requires
 planning, or where you are not 95% confident in scope or approach, use
