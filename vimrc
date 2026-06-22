@@ -5,7 +5,7 @@ set tabstop=4 shiftwidth=4 expandtab smarttab softtabstop=4 autoindent omnifunc=
 autocmd BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class
 
 syntax match Special "\t"
-inoremap # X#
+inoremap # X<BS>#
 
 set incsearch
 set showmatch
