@@ -20,10 +20,13 @@ fi
 
 model=$(echo "$input" | jq -r '.model.display_name // ""')
 
-# pauta sprint status (only in projects that have docs/roadmap/issues.jsonl)
+# pauta sprint status — requires docs/roadmap/issues.jsonl and pauta installed
+# locally as a project dependency; call the local bin directly (not npx) so a
+# missing install fails instantly instead of falling through to a registry lookup
 pauta_status=""
-if [ -f "$cwd/docs/roadmap/issues.jsonl" ]; then
-  pauta_status=$(cd "$cwd" && timeout 2 npx --no-install pauta status 2>/dev/null)
+pauta_bin="$cwd/node_modules/.bin/pauta"
+if [ -f "$cwd/docs/roadmap/issues.jsonl" ] && [ -x "$pauta_bin" ]; then
+  pauta_status=$( (cd "$cwd" && timeout 1 "$pauta_bin" status) 2>/dev/null )
 fi
 
 sess_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
