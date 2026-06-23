@@ -54,7 +54,7 @@ gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, 
 | `.claude/RTK.md` | `~/.claude/RTK.md` | RTK token-proxy reference (imported by CLAUDE.md via `@RTK.md`) |
 | `.claude/settings.json` | `~/.claude/settings.json` | Hooks, model (`opusplan`), plugins, statusline |
 | `.claude/settings.local.json` | `~/.claude/settings.local.json` | Tool permission allowlist |
-| `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line: session usage, rate limits |
+| `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line: session usage, rate limits, active pauta sprint |
 | `.claude/commands/` | `~/.claude/commands/` | Global slash commands (`/publish`, `/roadmap`) |
 | `.claude/agents/` | `~/.claude/agents/` | Custom subagents: code-reviewer, test-writer, docs-writer (all Sonnet) |
 | `.claude/hooks/` | `~/.claude/hooks/` | PreToolUse hooks: rtk-rewrite, env-loader, check-main-branch |

@@ -20,6 +20,12 @@ fi
 
 model=$(echo "$input" | jq -r '.model.display_name // ""')
 
+# pauta sprint status (only in projects that have docs/roadmap/issues.jsonl)
+pauta_status=""
+if [ -f "$cwd/docs/roadmap/issues.jsonl" ]; then
+  pauta_status=$(cd "$cwd" && timeout 2 npx --no-install pauta status 2>/dev/null)
+fi
+
 sess_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 five_h=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
 seven_d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
@@ -33,6 +39,10 @@ fi
 
 if [ -n "$model" ]; then
   printf " \033[0;36m%s\033[0m" "$model"
+fi
+
+if [ -n "$pauta_status" ] && [ "$pauta_status" != "no active sprint" ]; then
+  printf " \033[0;32m%s\033[0m" "$pauta_status"
 fi
 
 if [ -n "$five_h" ]; then
