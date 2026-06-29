@@ -35,8 +35,10 @@
     "vercel@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true
   },
+  "tui": "fullscreen",
   "theme": "dark-daltonized",
+  "editorMode": "normal",
+  "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "tui": "fullscreen"
+  "skipAutoPermissionPrompt": true
 }
