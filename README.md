@@ -127,8 +127,9 @@ not yet done (the step warns and skips, rest of `install.sh` continues):
 1. Your SSH public key must already be added to GitHub (`bootstrap.sh` generates it) — needed to
    clone the private `dotfiles-private` repo.
 2. Run `rclone config` interactively once to authorize the `gdrive` remote — this needs your
-   Google login + consent in a browser and genuinely can't be scripted. See
-   [rclone's Google Drive guide](https://rclone.org/drive/) for the exact prompts.
+   Google login + consent in a browser and genuinely can't be scripted.
+   `setup-gdrive-bisync.sh` prints the full step-by-step wizard walkthrough itself when it
+   detects this is still pending, so you don't need to look it up separately.
 
 **Check status:** `bash ~/prj/git/gdrive-bisync/status.sh`
 **Retry after clearing a blocker:** re-run `~/dotfiles/install.sh`, or test the step in isolation
