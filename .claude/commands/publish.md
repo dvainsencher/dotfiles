@@ -159,12 +159,12 @@ Print: `Step 5.6 — Review skipped: <triage reason>` and go to Step 6.
 
 Run: `git log main..HEAD --oneline` (or `master..HEAD`)
 
-Apply this decision tree directly:
+Apply this decision tree directly and proceed without asking:
 - **1 clean commit** → rebase: `gh pr merge --rebase --delete-branch`
 - **Multiple commits on a feature/fix branch** → squash: `gh pr merge --squash --delete-branch`
 - **Long-lived or release branch** → merge commit: `gh pr merge --merge --delete-branch`
 
-State your recommendation with the commit count, then ask the user to confirm or choose differently before proceeding.
+State which strategy you chose and why (commit count), then immediately run Step 7 — do not ask for confirmation.
 
 ## Step 7 — Merge the PR
 
