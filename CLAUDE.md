@@ -2,7 +2,7 @@
 
 ## Repo purpose
 Personal dotfiles for Ubuntu/Debian. Two entry points:
-- `install.sh` — symlinks dotfiles, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`
+- `install.sh` — symlinks dotfiles, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`, sets up gdrive-bisync Google Drive sync
 - `bootstrap.sh` — full fresh-machine setup (packages, tools, fonts, SSH key, then runs install.sh)
 
 ## Commit conventions
@@ -19,6 +19,11 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 - `gitconfig` uses `hooksPath = ~/.config/git-hooks` (cloned from `dvainsencher/git-hooks`)
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
+- gdrive-bisync and dotfiles-private are separate repos (not vendored here) cloned into
+  `~/prj/git/` by `setup-gdrive-bisync.sh` — kept separate so private folder names/paths never
+  land in this public repo. Both the private clone and the gdrive-bisync install step are
+  explicitly non-fatal on failure (manual steps — SSH key on GitHub, `rclone config` — may not be
+  done yet), matching the `GITHUB_PAT`-missing pattern already used for GitHub MCP registration.
 
 ## bootstrap.sh conventions
 - All installs are idempotent — check before installing, skip if already present
@@ -45,13 +50,29 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `.claude/agents/` | `~/.claude/agents/` | Custom Claude Code subagents |
 | `.claude/hooks/env-loader.sh` | `~/.claude/hooks/env-loader.sh` | Pre-tool-use hook: prepends `source ~/.env.local` to bash commands |
 | *(generated)* `~/.claude/RTK.md` | — | RTK usage docs, auto-created by `install.sh` if `rtk` is installed |
+| `setup-gdrive-bisync.sh` | not symlinked — run directly or via `install.sh` | Clones gdrive-bisync + dotfiles-private into `~/prj/git/`, wires up periodic Google Drive sync |
+
+## gdrive-bisync / dotfiles-private integration
+- Clone destinations: `~/prj/git/gdrive-bisync` (public tool, HTTPS clone) and
+  `~/prj/git/dotfiles-private` (private config, SSH clone — no HTTPS-credential story exists in
+  this codebase for private repos).
+- `setup-gdrive-bisync.sh` runs `gdrive-bisync/install.sh --config
+  dotfiles-private/config/gdrive-bisync.sh` and maps its exit codes to a friendly `warn()`/`ok()`
+  message: `0` success, `1` rclone missing, `2` rclone remote not configured, `3` config
+  missing/invalid. Codes 1-3 are non-fatal — the script warns and exits 0 so `install.sh` (which
+  runs under `set -e`) isn't aborted.
+- The script is directly runnable and testable in isolation (`bash
+  ~/dotfiles/setup-gdrive-bisync.sh [--dry-run]`), independent of every other `install.sh` step —
+  same pattern as `.claude/cclsp/setup-cclsp.sh`.
+- No new file is symlinked into `$HOME` for this feature (nothing to add to the symlink-target
+  column beyond the new `setup-gdrive-bisync.sh` row above).
 
 ## Documentation
 
 | Doc | Covers | Update when |
 |-----|--------|-------------|
-| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `.claude/agents/`, `gitconfig.local.example` | New dotfile added or removed, symlink targets change, new slash command added, new agent added, bootstrap package list changes |
-| `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file |
+| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `.claude/agents/`, `gitconfig.local.example`, gdrive-bisync Google Drive sync | New dotfile added or removed, symlink targets change, new slash command added, new agent added, bootstrap package list changes, gdrive-bisync wiring changes |
+| `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions, gdrive-bisync/dotfiles-private integration | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file, `setup-gdrive-bisync.sh` behavior changes |
 | `.claude/CLAUDE.md` | Global Claude Code workflow rules, subagent model strategy, `.claude/agents/` agent roster | New agent added, agent model or role changes, workflow rules change |
 | `.claude/commands/README.md` | `.claude/commands/publish.md`, `.claude/commands/roadmap.md`, slash command setup and usage | New command added or removed, setup steps change |
 | `.claude/commands/publish.md` | Full publish workflow — git, `gh pr`, merge strategy, docs audit, code review | Steps added or reordered, doc-impacting file classification changes, subagent prompts change |
