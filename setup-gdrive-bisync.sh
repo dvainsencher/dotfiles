@@ -117,6 +117,7 @@ else
             log  "     prints a URL to open on any device, then paste back a code"
             log  "  9. Log in with the Google account that owns the Drive folder"
             log  "  10. Confirm the remote, y to keep it, q to quit the menu"
+            log  "If rclone's wizard has changed since this was written: https://rclone.org/drive/"
             warn "Then re-run: bash $0"
             ;;
         3) warn "config invalid/missing at $GDRIVE_BISYNC_PRIVATE_CONFIG" ;;
