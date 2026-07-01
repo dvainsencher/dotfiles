@@ -99,8 +99,27 @@ else
     set -e
     case $gdrive_exit in
         0) ok "install complete (resync + cron entry)" ;;
-        1) warn "rclone not installed — see [ rclone install ] output above, then re-run" ;;
-        2) warn "rclone remote 'gdrive' not configured — run 'rclone config' (see https://rclone.org/drive/ for the Drive-specific prompts), then re-run" ;;
+        1)
+            warn "rclone not installed — see [ rclone install ] output above, then re-run"
+            log  "manual install: https://rclone.org/install/"
+            ;;
+        2)
+            warn "rclone remote 'gdrive' isn't configured yet. Run 'rclone config' and:"
+            log  "  1. Choose 'n' (New remote)"
+            log  "  2. name: gdrive   (must match exactly)"
+            log  "  3. Storage: Google Drive (enter its number, or type 'drive')"
+            log  "  4. client_id / client_secret: leave blank (press Enter)"
+            log  "  5. scope: 1 (full access), unless you want read-only"
+            log  "  6. root_folder_id / service_account_file: leave blank"
+            log  "  7. Edit advanced config?: n"
+            log  "  8. Use auto config?: y if you have a browser on this machine"
+            log  "     (opens Google login automatically); n if headless — it"
+            log  "     prints a URL to open on any device, then paste back a code"
+            log  "  9. Log in with the Google account that owns the Drive folder"
+            log  "  10. Confirm the remote, y to keep it, q to quit the menu"
+            log  "If rclone's wizard has changed since this was written: https://rclone.org/drive/"
+            warn "Then re-run: bash $0"
+            ;;
         3) warn "config invalid/missing at $GDRIVE_BISYNC_PRIVATE_CONFIG" ;;
         *) warn "install.sh exited $gdrive_exit — unexpected, check output above" ;;
     esac
