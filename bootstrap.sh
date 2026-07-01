@@ -36,6 +36,7 @@ apt_install fzf
 apt_install ripgrep
 apt_install direnv
 apt_install fontconfig
+apt_install rclone
 
 echo "==> Installing Python dev tools..."
 apt_install python3

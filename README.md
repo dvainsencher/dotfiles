@@ -7,7 +7,7 @@ Personal dotfiles for Ubuntu/Debian — shell, git, vim, Starship prompt, direnv
 | Script | Use when |
 |--------|----------|
 | `bootstrap.sh` | Fresh machine — installs packages, tools, fonts, generates SSH key, then runs `install.sh` |
-| `install.sh` | Dotfiles only — symlinks config files, installs cheap-worker tools, installs+registers cclsp, clones git-hooks |
+| `install.sh` | Dotfiles only — symlinks config files, installs cheap-worker tools, installs+registers cclsp, clones git-hooks, sets up gdrive-bisync Google Drive sync |
 
 ### Bootstrap a fresh machine
 
@@ -27,10 +27,10 @@ register the GitHub MCP server.
 
 ## Prerequisites
 
-For `install.sh`: `git`, `curl`, `vim`, `node` (for cclsp MCP registration)
+For `install.sh`: `git`, `curl`, `vim`, `node` (for cclsp MCP registration), `rclone` (for gdrive-bisync)
 
 For `bootstrap.sh`: just `curl` — everything else is installed automatically, including:
-gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, Chrome, Claude Desktop, Claude Code.
+gh, fzf, tmux, jq, ripgrep, direnv, rclone, uv, Node.js, Starship, nerd fonts, VS Code, Chrome, Claude Desktop, Claude Code.
 
 ## What's included
 
@@ -107,6 +107,29 @@ LSP roots. Example: point the TS server at a `frontend/` subdirectory when the r
 
 `bashrc` exports `WORKER_BASE_URL` and `WORKER_MODEL` defaults (DeepSeek). The `env-loader.sh`
 hook auto-injects the key when these tools are invoked.
+
+## Google Drive sync (gdrive-bisync)
+
+`install.sh` runs `setup-gdrive-bisync.sh`, which clones two external repos into `~/prj/git/`
+and wires up periodic two-way sync (every 15 min, via cron) between a local folder and a Google
+Drive folder:
+
+- [gdrive-bisync](https://github.com/dvainsencher/gdrive-bisync) — public, generic, config-driven
+  `rclone bisync` tool.
+- [dotfiles-private](https://github.com/dvainsencher/dotfiles-private) — private, holds the actual
+  folder pairs (e.g. `~/work` <-> Drive folder `work`), kept out of this public repo.
+
+Two manual one-time steps are required before sync actually starts, and both are non-fatal if
+not yet done (the step warns and skips, rest of `install.sh` continues):
+
+1. Your SSH public key must already be added to GitHub (`bootstrap.sh` generates it) — needed to
+   clone the private `dotfiles-private` repo.
+2. Run `rclone config` interactively once to authorize the `gdrive` remote (OAuth login — can't
+   be scripted).
+
+**Check status:** `bash ~/prj/git/gdrive-bisync/status.sh`
+**Retry after clearing a blocker:** re-run `~/dotfiles/install.sh`, or test the step in isolation
+with `bash ~/dotfiles/setup-gdrive-bisync.sh`.
 
 ## Secrets
 
