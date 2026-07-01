@@ -56,11 +56,16 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 - Clone destinations: `~/prj/git/gdrive-bisync` (public tool, HTTPS clone) and
   `~/prj/git/dotfiles-private` (private config, SSH clone — no HTTPS-credential story exists in
   this codebase for private repos).
+- `setup-gdrive-bisync.sh` installs `rclone` itself if missing, via `curl
+  https://rclone.org/install.sh | sudo bash` (not apt — apt lags upstream, and `bisync`
+  reliability depends on a recent release). `bootstrap.sh` does NOT apt-install rclone; this
+  script is the single source of truth for getting rclone onto the machine.
 - `setup-gdrive-bisync.sh` runs `gdrive-bisync/install.sh --config
   dotfiles-private/config/gdrive-bisync.sh` and maps its exit codes to a friendly `warn()`/`ok()`
-  message: `0` success, `1` rclone missing, `2` rclone remote not configured, `3` config
-  missing/invalid. Codes 1-3 are non-fatal — the script warns and exits 0 so `install.sh` (which
-  runs under `set -e`) isn't aborted.
+  message: `0` success, `1` rclone missing (shouldn't happen given the step above, but the mapping
+  stays as a fallback), `2` rclone remote not configured, `3` config missing/invalid. Codes 1-3 are
+  non-fatal — the script warns and exits 0 so `install.sh` (which runs under `set -e`) isn't
+  aborted.
 - The script is directly runnable and testable in isolation (`bash
   ~/dotfiles/setup-gdrive-bisync.sh [--dry-run]`), independent of every other `install.sh` step —
   same pattern as `.claude/cclsp/setup-cclsp.sh`.
