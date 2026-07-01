@@ -27,10 +27,11 @@ register the GitHub MCP server.
 
 ## Prerequisites
 
-For `install.sh`: `git`, `curl`, `vim`, `node` (for cclsp MCP registration), `rclone` (for gdrive-bisync)
+For `install.sh`: `git`, `curl`, `vim`, `node` (for cclsp MCP registration). `rclone` is installed
+automatically by `setup-gdrive-bisync.sh` if missing.
 
 For `bootstrap.sh`: just `curl` — everything else is installed automatically, including:
-gh, fzf, tmux, jq, ripgrep, direnv, rclone, uv, Node.js, Starship, nerd fonts, VS Code, Chrome, Claude Desktop, Claude Code.
+gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, Chrome, Claude Desktop, Claude Code.
 
 ## What's included
 
@@ -110,9 +111,10 @@ hook auto-injects the key when these tools are invoked.
 
 ## Google Drive sync (gdrive-bisync)
 
-`install.sh` runs `setup-gdrive-bisync.sh`, which clones two external repos into `~/prj/git/`
-and wires up periodic two-way sync (every 15 min, via cron) between a local folder and a Google
-Drive folder:
+`install.sh` runs `setup-gdrive-bisync.sh`, which clones two external repos into `~/prj/git/`,
+installs `rclone` if missing (via its official installer, not apt — apt lags upstream and
+`bisync` needs a recent release), and wires up periodic two-way sync (every 15 min, via cron)
+between a local folder and a Google Drive folder:
 
 - [gdrive-bisync](https://github.com/dvainsencher/gdrive-bisync) — public, generic, config-driven
   `rclone bisync` tool.
@@ -124,8 +126,9 @@ not yet done (the step warns and skips, rest of `install.sh` continues):
 
 1. Your SSH public key must already be added to GitHub (`bootstrap.sh` generates it) — needed to
    clone the private `dotfiles-private` repo.
-2. Run `rclone config` interactively once to authorize the `gdrive` remote (OAuth login — can't
-   be scripted).
+2. Run `rclone config` interactively once to authorize the `gdrive` remote — this needs your
+   Google login + consent in a browser and genuinely can't be scripted. See
+   [rclone's Google Drive guide](https://rclone.org/drive/) for the exact prompts.
 
 **Check status:** `bash ~/prj/git/gdrive-bisync/status.sh`
 **Retry after clearing a blocker:** re-run `~/dotfiles/install.sh`, or test the step in isolation

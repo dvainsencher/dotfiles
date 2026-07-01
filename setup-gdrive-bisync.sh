@@ -8,12 +8,18 @@
 # What this does:
 #   1. Clones gdrive-bisync (public tool) to ~/prj/git/gdrive-bisync
 #   2. Clones dotfiles-private (private config) to ~/prj/git/dotfiles-private
-#   3. Runs gdrive-bisync's own install.sh against the private config
+#   3. Installs rclone via its official install script, if not already present
+#   4. Runs gdrive-bisync's own install.sh against the private config
 #
-# Steps 2 and 3 depend on manual one-time setup (SSH key added to GitHub;
+# Steps 2 and 4 depend on manual one-time setup (SSH key added to GitHub;
 # `rclone config` run interactively) that a fresh machine won't have done
 # yet — this script warns and exits 0 in those cases rather than failing,
 # so it's always safe to re-run after clearing a blocker.
+#
+# rclone via the official installer, not apt: apt's rclone lags behind
+# upstream (e.g. 1.60.1 on Ubuntu 24.04 vs current stable), and `bisync`
+# reliability depends on running a recent release — same reasoning already
+# applied to starship/uv/node in bootstrap.sh.
 # =============================================================================
 
 set -euo pipefail
@@ -65,7 +71,22 @@ else
 fi
 echo ""
 
-# ── 3. gdrive-bisync's own installer against the private config ─────────
+# ── 3. rclone itself, via the official installer ─────────────────────────
+echo "[ rclone install ]"
+if command -v rclone &>/dev/null; then
+    ok "already installed: $(rclone version | head -1)"
+elif [[ "$DRY_RUN" == true ]]; then
+    log "[dry-run] would install rclone via https://rclone.org/install.sh"
+else
+    if curl -fsSL https://rclone.org/install.sh | sudo bash; then
+        ok "installed: $(rclone version | head -1)"
+    else
+        warn "rclone install failed — install manually (https://rclone.org/install/), then re-run"
+    fi
+fi
+echo ""
+
+# ── 4. gdrive-bisync's own installer against the private config ─────────
 echo "[ gdrive-bisync install ]"
 if [[ "$DRY_RUN" == true ]]; then
     log "[dry-run] would run: $GDRIVE_BISYNC_DIR/install.sh --config $GDRIVE_BISYNC_PRIVATE_CONFIG"
@@ -78,8 +99,8 @@ else
     set -e
     case $gdrive_exit in
         0) ok "install complete (resync + cron entry)" ;;
-        1) warn "rclone not installed — 'sudo apt install rclone', then re-run" ;;
-        2) warn "rclone remote 'gdrive' not configured — run 'rclone config', then re-run" ;;
+        1) warn "rclone not installed — see [ rclone install ] output above, then re-run" ;;
+        2) warn "rclone remote 'gdrive' not configured — run 'rclone config' (see https://rclone.org/drive/ for the Drive-specific prompts), then re-run" ;;
         3) warn "config invalid/missing at $GDRIVE_BISYNC_PRIVATE_CONFIG" ;;
         *) warn "install.sh exited $gdrive_exit — unexpected, check output above" ;;
     esac
