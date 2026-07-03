@@ -10,6 +10,8 @@
 #   2. Clones dotfiles-private (private config) to ~/prj/git/dotfiles-private
 #   3. Installs rclone via its official install script, if not already present
 #   4. Runs gdrive-bisync's own install.sh against the private config
+#   5. Optionally sets a custom folder icon on each synced folder (GNOME only,
+#      see GDRIVE_FOLDER_ICON in the private config — skipped if unset)
 #
 # Steps 2 and 4 depend on manual one-time setup (SSH key added to GitHub;
 # `rclone config` run interactively) that a fresh machine won't have done
@@ -101,32 +103,93 @@ else
         0) ok "install complete (resync + cron entry)" ;;
         1)
             warn "rclone not installed — see [ rclone install ] output above, then re-run"
-            log  "manual install: https://rclone.org/install/"
+            log  "  1. See the error above for why the automatic install failed"
+            log  "  2. Install manually: https://rclone.org/install/"
+            log  "  3. Then re-run: bash $0"
             ;;
         2)
-            warn "rclone remote 'gdrive' isn't configured yet. Run 'rclone config' and:"
-            log  "  1. Choose 'n' (New remote)"
-            log  "  2. name: gdrive   (must match exactly)"
-            log  "  3. Storage: Google Drive (enter its number, or type 'drive')"
-            log  "  4. client_id / client_secret: leave blank (press Enter)"
-            log  "  5. scope: 1 (full access), unless you want read-only"
-            log  "  6. root_folder_id / service_account_file: leave blank"
-            log  "  7. Edit advanced config?: n"
-            log  "  8. Use auto config?: y if you have a browser on this machine"
-            log  "     (opens Google login automatically); n if headless — it"
-            log  "     prints a URL to open on any device, then paste back a code"
-            log  "  9. Log in with the Google account that owns the Drive folder"
-            log  "  10. Confirm the remote, y to keep it, q to quit the menu"
-            log  "If rclone's wizard has changed since this was written: https://rclone.org/drive/"
+            warn "rclone remote 'gdrive' isn't configured yet."
+            log  "Background: 'rclone config' below grants rclone access to your"
+            log  "whole Google Drive account — it does NOT ask you to pick a specific"
+            log  "folder (see the note after these steps for where 'work' is chosen)."
+            log  "Full docs: https://rclone.org/drive/"
+            log  ""
+            log  "Run 'rclone config' yourself and answer exactly:"
+            log  "  1.  n                    New remote"
+            log  "  2.  name: gdrive         must match exactly"
+            log  "  3.  Storage: enter the number next to \"Google Drive\", or type drive"
+            log  "  4.  client_id: <Enter>   leave blank"
+            log  "  5.  client_secret: <Enter>   leave blank"
+            log  "      (blank uses rclone's own shared app — fine for personal use;"
+            log  "      for your own dedicated OAuth client instead, see"
+            log  "      https://rclone.org/drive/#making-your-own-client-id)"
+            log  "  6.  scope: choose drive — \"Full access all files, excluding"
+            log  "      Application Data Folder.\" Do NOT choose drive.appfolder —"
+            log  "      that restricts rclone to a hidden area and won't see real"
+            log  "      folders like work."
+            log  "  7.  root_folder_id / service_account_file: <Enter>   leave blank"
+            log  "  8.  Edit advanced config?: n"
+            log  "      (if you're ever asked for root_folder_id anyway, leave it"
+            log  "      BLANK — never enter appDataFolder or anything else there)"
+            log  "  9.  Use auto config?: y if this machine has a browser you're using"
+            log  "      right now (opens Google's login page automatically at"
+            log  "      http://127.0.0.1:53682/); n only if this is a headless/remote"
+            log  "      machine with no browser — it prints a URL to open elsewhere,"
+            log  "      then asks you to paste back a verification code"
+            log  "  10. Log in with the Google account that owns the Drive folder,"
+            log  "      and grant access"
+            log  "  11. Back in the terminal: confirm the remote's settings look"
+            log  "      right, y to keep it, q to quit the config menu"
+            log  ""
+            log  "Where the folder to sync actually comes from: NOT from 'rclone"
+            log  "config' above. It's the third field of the GDRIVE_PAIRS entry in"
+            log  "$GDRIVE_BISYNC_PRIVATE_CONFIG"
+            log  "(already set to 'work' for this setup — edit that file, not"
+            log  "'rclone config', to change which folder syncs)."
+            log  ""
+            log  "Verify before assuming this worked: run 'rclone lsd gdrive:'"
+            log  "yourself and confirm it lists your real Drive folders. If it"
+            log  "errors (e.g. insufficientScopes), redo 'rclone config' rather"
+            log  "than assuming it's fine."
             warn "Then re-run: bash $0"
             ;;
         3) warn "config invalid/missing at $GDRIVE_BISYNC_PRIVATE_CONFIG" ;;
         *) warn "install.sh exited $gdrive_exit — unexpected, check output above" ;;
     esac
 fi
+echo ""
+
+# ── 5. optional: custom folder icon (GNOME/Nautilus only) ────────────────
+echo "[ folder icon ]"
+if [[ -f "$GDRIVE_BISYNC_PRIVATE_CONFIG" ]]; then
+    # shellcheck disable=SC1090
+    source "$GDRIVE_BISYNC_PRIVATE_CONFIG"
+fi
+if [[ -z "${GDRIVE_FOLDER_ICON:-}" ]]; then
+    log "GDRIVE_FOLDER_ICON not set in config — skipping (cosmetic, optional)"
+elif ! command -v gio &>/dev/null; then
+    log "gio not found (not a GNOME/Nautilus desktop?) — skipping folder icon"
+elif [[ ! -f "$GDRIVE_FOLDER_ICON" ]]; then
+    log "icon file not found at $GDRIVE_FOLDER_ICON — skipping"
+elif [[ "$DRY_RUN" == true ]]; then
+    log "[dry-run] would set folder icon for: ${GDRIVE_PAIRS[*]:-<none>}"
+else
+    for pair in "${GDRIVE_PAIRS[@]}"; do
+        IFS=':' read -r name local remote_path <<< "$pair"
+        gio set "$local" metadata::custom-icon "file://$GDRIVE_FOLDER_ICON"
+        ok "icon set on $local"
+    done
+fi
 
 echo ""
 echo "=== gdrive-bisync setup done ==="
 echo ""
 echo "Verify: bash $GDRIVE_BISYNC_DIR/status.sh"
+echo ""
+echo "Safety note: rclone bisync already refuses to sync (rather than wiping"
+echo "everything) if either side is completely empty, and aborts if more than"
+echo "half the files would be deleted in one run. Google Drive also trashes"
+echo "deletions instead of purging them immediately. Still: don't delete a"
+echo "synced local folder while its cron entry is still active — remove the"
+echo "cron entry first. See gdrive-bisync's README for details."
 echo ""

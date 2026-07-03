@@ -71,6 +71,14 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
   same pattern as `.claude/cclsp/setup-cclsp.sh`.
 - No new file is symlinked into `$HOME` for this feature (nothing to add to the symlink-target
   column beyond the new `setup-gdrive-bisync.sh` row above).
+- Final step, best-effort/non-fatal: if the private config sets `GDRIVE_FOLDER_ICON` (a local,
+  non-git-tracked image path), applies it as a custom GNOME/Nautilus folder icon on every synced
+  folder via `gio set <folder> metadata::custom-icon`. Silently skipped if unset or if `gio` isn't
+  available — purely cosmetic, never blocks the rest of setup.
+- Interactive/credential-affecting commands (`rclone config`, OAuth flows) are never run by Claude
+  on the user's behalf — only the exact command to run is handed over, even when technically
+  runnable via the Bash tool. Established after `rclone config update` unexpectedly triggered a
+  browser OAuth prompt during an earlier session.
 
 ## Documentation
 

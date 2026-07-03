@@ -135,6 +135,11 @@ not yet done (the step warns and skips, rest of `install.sh` continues):
 **Retry after clearing a blocker:** re-run `~/dotfiles/install.sh`, or test the step in isolation
 with `bash ~/dotfiles/setup-gdrive-bisync.sh`.
 
+**Optional folder icon:** set `GDRIVE_FOLDER_ICON` in the private config to a local image path
+(kept out of git — it's a personal preference, not a dotfile) and `setup-gdrive-bisync.sh` applies
+it as a custom GNOME/Nautilus folder icon on every synced folder via `gio set`. Skipped silently
+if unset or if `gio` isn't available (non-GNOME desktops).
+
 ## Secrets
 
 Create `~/.env.local` (gitignored, sourced by `~/.bashrc` and the env-loader hook):
