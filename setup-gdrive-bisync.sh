@@ -165,19 +165,24 @@ if [[ -f "$GDRIVE_BISYNC_PRIVATE_CONFIG" ]]; then
     # shellcheck disable=SC1090
     source "$GDRIVE_BISYNC_PRIVATE_CONFIG"
 fi
-if [[ -z "${GDRIVE_FOLDER_ICON:-}" ]]; then
+if [[ "$DRY_RUN" == true ]]; then
+    log "[dry-run] would set folder icon (if configured) for: ${GDRIVE_PAIRS[*]:-<none>}"
+elif [[ -z "${GDRIVE_FOLDER_ICON:-}" ]]; then
     log "GDRIVE_FOLDER_ICON not set in config — skipping (cosmetic, optional)"
 elif ! command -v gio &>/dev/null; then
     log "gio not found (not a GNOME/Nautilus desktop?) — skipping folder icon"
 elif [[ ! -f "$GDRIVE_FOLDER_ICON" ]]; then
     log "icon file not found at $GDRIVE_FOLDER_ICON — skipping"
-elif [[ "$DRY_RUN" == true ]]; then
-    log "[dry-run] would set folder icon for: ${GDRIVE_PAIRS[*]:-<none>}"
 else
     for pair in "${GDRIVE_PAIRS[@]}"; do
-        IFS=':' read -r name local remote_path <<< "$pair"
-        gio set "$local" metadata::custom-icon "file://$GDRIVE_FOLDER_ICON"
-        ok "icon set on $local"
+        IFS=':' read -r name local_path remote_path <<< "$pair"
+        if [[ ! -d "$local_path" ]]; then
+            log "$name: local folder $local_path doesn't exist yet — skipping icon"
+        elif gio set "$local_path" metadata::custom-icon "file://$GDRIVE_FOLDER_ICON"; then
+            ok "icon set on $local_path"
+        else
+            warn "failed to set icon on $local_path — non-fatal, continuing"
+        fi
     done
 fi
 
