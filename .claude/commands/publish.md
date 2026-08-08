@@ -97,6 +97,15 @@ Show the PR URL to the user.
 
 ## Step 5.5 — Wait for CI
 
+**Use this exact command — do not substitute a `--json`-based poll.** `gh pr checks`
+does not support `--json` in this environment (confirmed: `gh pr checks <n> --json
+name,bucket` returns `unknown flag: --json`, not JSON). A custom Monitor/poll loop
+built around that flag will fail every call, and if the loop's error handling
+swallows the failure (e.g. `... || echo "[]"`), "command is failing" becomes
+indistinguishable from "still pending" — the loop silently retries until it times
+out, even long after checks actually passed. The plain-text form below has no such
+failure mode.
+
 Run:
 ```
 PR_NUM=$(gh pr view --json number -q .number)
