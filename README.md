@@ -7,7 +7,7 @@ Personal dotfiles for Ubuntu/Debian — shell, git, vim, Starship prompt, direnv
 | Script | Use when |
 |--------|----------|
 | `bootstrap.sh` | Fresh machine — installs packages, tools, fonts, generates SSH key, then runs `install.sh` |
-| `install.sh` | Dotfiles only — symlinks config files, installs cheap-worker tools, installs+registers cclsp, clones git-hooks, sets up gdrive-bisync Google Drive sync |
+| `install.sh` | Dotfiles only — symlinks config files, installs cheap-worker tools, installs+registers cclsp, clones git-hooks, installs/updates rtk, sets up gdrive-bisync Google Drive sync |
 
 ### Bootstrap a fresh machine
 
@@ -74,7 +74,7 @@ See `.claude/CLAUDE.md` for the full ladder. Summary:
 | Tier | Tool | When |
 |------|------|------|
 | 0 | **cclsp** — LSP-over-MCP semantic nav | Symbol lookup, find_references, diagnostics (before grep) |
-| 0 | **RTK proxy** | All shell commands — auto-rewritten, 60-90% token savings |
+| 0 | **RTK proxy** ([updating](#rtk--token-saving-cli-proxy)) | All shell commands — auto-rewritten, 60-90% token savings |
 | 1 | **ask-kimi** (DeepSeek) | Bulk read: files >400 lines or 3+ files at once |
 | 1 | **kimi-write** (DeepSeek) | Boilerplate generation: tests, config, repetitive patterns |
 | 1 | **extract-chat** | Parse Claude Code JSONL session logs to text |
@@ -95,6 +95,16 @@ LSP roots. Example: point the TS server at a `frontend/` subdirectory when the r
 
 > **Note:** after editing `cclsp.json` reconnect via `/mcp` in Claude Code — `restart_server`
 > only cycles the downstream LSP, not the cclsp config itself.
+
+## rtk — token-saving CLI proxy
+
+`install.sh` runs `setup-rtk.sh` on every run, which installs [rtk](https://github.com/rtk-ai/rtk)
+via its official installer (always fetches the latest release to `~/.local/bin/rtk`) and removes
+any stray `cargo install`-built copy from `~/.cargo/bin/rtk` (shadowed by `~/.local/bin` on PATH,
+so it was never actually the binary running — only a source of confusion).
+
+**Update rtk:** just re-run `~/dotfiles/install.sh`, or run the step standalone:
+`bash ~/dotfiles/setup-rtk.sh`. Both are idempotent and safe to re-run any time.
 
 ## Cheap-worker delegation (DeepSeek)
 

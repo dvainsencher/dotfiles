@@ -2,7 +2,7 @@
 
 ## Repo purpose
 Personal dotfiles for Ubuntu/Debian. Two entry points:
-- `install.sh` — symlinks dotfiles, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`, sets up gdrive-bisync Google Drive sync
+- `install.sh` — symlinks dotfiles, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`, installs/updates rtk, sets up gdrive-bisync Google Drive sync
 - `bootstrap.sh` — full fresh-machine setup (packages, tools, fonts, SSH key, then runs install.sh)
 
 ## Commit conventions
@@ -51,6 +51,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `.claude/hooks/env-loader.sh` | `~/.claude/hooks/env-loader.sh` | Pre-tool-use hook: prepends `source ~/.env.local` to bash commands |
 | *(generated)* `~/.claude/RTK.md` | — | RTK usage docs, auto-created by `install.sh` if `rtk` is installed |
 | `setup-gdrive-bisync.sh` | not symlinked — run directly or via `install.sh` | Clones gdrive-bisync + dotfiles-private into `~/prj/git/`, wires up periodic Google Drive sync |
+| `setup-rtk.sh` | not symlinked — run directly or via `install.sh` | Installs/updates rtk to `~/.local/bin/rtk` via its official installer, removes any stray `cargo install` copy |
 
 ## gdrive-bisync / dotfiles-private integration
 - Clone destinations: `~/prj/git/gdrive-bisync` (public tool, HTTPS clone) and
@@ -80,12 +81,32 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
   runnable via the Bash tool. Established after `rclone config update` unexpectedly triggered a
   browser OAuth prompt during an earlier session.
 
+## rtk (token-saving CLI proxy) integration
+- rtk was previously installed by hand (curl official installer + a stray, shadowed `cargo install
+  --git`) and untracked by this repo — `setup-rtk.sh` makes install/update a tracked, repeatable
+  step instead.
+- `setup-rtk.sh` always re-runs rtk's official installer
+  (`curl .../rtk-ai/rtk/refs/heads/master/install.sh | sh`) to `~/.local/bin/rtk` — unlike most
+  other `install.sh` steps it does not skip if already present, since the whole point is to fetch
+  the latest release each time. It also removes any `cargo install`-built copy from
+  `~/.cargo/bin/rtk`: `~/.local/bin` comes first on `$PATH`, so a cargo-built copy is silently
+  shadowed rather than actually used, and only causes confusion about which binary is running.
+- `install.sh` runs it on every invocation (`maybe_run "install/update rtk..."`) — re-running
+  `install.sh` is the update mechanism. Also directly runnable/testable in isolation (`bash
+  ~/dotfiles/setup-rtk.sh [--dry-run]`), same pattern as `setup-gdrive-bisync.sh` /
+  `.claude/cclsp/setup-cclsp.sh`.
+- Both the installer and the cargo-cleanup step are non-fatal — a failure warns and moves on
+  rather than aborting, so the script always exits 0. `install.sh` runs under `set -e`, so
+  without this a network hiccup here would kill every step after it (git-hooks clone,
+  gdrive-bisync setup, etc.) — same non-fatal contract as `setup-gdrive-bisync.sh`.
+- rtk itself is not vendored — upstream is `github.com/rtk-ai/rtk`.
+
 ## Documentation
 
 | Doc | Covers | Update when |
 |-----|--------|-------------|
-| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `.claude/agents/`, `gitconfig.local.example`, gdrive-bisync Google Drive sync | New dotfile added or removed, symlink targets change, new slash command added, new agent added, bootstrap package list changes, gdrive-bisync wiring changes |
-| `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions, gdrive-bisync/dotfiles-private integration | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file, `setup-gdrive-bisync.sh` behavior changes |
+| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `.claude/agents/`, `gitconfig.local.example`, gdrive-bisync Google Drive sync, rtk install/update | New dotfile added or removed, symlink targets change, new slash command added, new agent added, bootstrap package list changes, gdrive-bisync wiring changes, `setup-rtk.sh` behavior changes |
+| `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions, gdrive-bisync/dotfiles-private integration, rtk integration | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file, `setup-gdrive-bisync.sh` or `setup-rtk.sh` behavior changes |
 | `.claude/CLAUDE.md` | Global Claude Code workflow rules, subagent model strategy, `.claude/agents/` agent roster | New agent added, agent model or role changes, workflow rules change |
 | `.claude/commands/README.md` | `.claude/commands/publish.md`, `.claude/commands/roadmap.md`, slash command setup and usage | New command added or removed, setup steps change |
 | `.claude/commands/publish.md` | Full publish workflow — git, `gh pr`, merge strategy, docs audit, code review | Steps added or reordered, doc-impacting file classification changes, subagent prompts change |
