@@ -12,6 +12,10 @@
           {
             "type": "command",
             "command": "/home/daniel/.claude/hooks/rtk-rewrite.sh"
+          },
+          {
+            "type": "command",
+            "command": "/home/daniel/.claude/hooks/roadmap-stash-guard.sh"
           }
         ]
       },
@@ -21,6 +25,16 @@
           {
             "type": "command",
             "command": "/home/daniel/.claude/hooks/check-main-branch.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/daniel/.claude/hooks/roadmap-uncommitted-warn.sh"
           }
         ]
       }
