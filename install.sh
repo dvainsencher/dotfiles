@@ -116,6 +116,10 @@ echo "==> Setting up gdrive-bisync..."
 maybe_run "set up gdrive-bisync (see output above for details)" \
     bash "$DOTFILES_DIR/setup-gdrive-bisync.sh"
 
+echo "==> Installing/updating rtk (token-saving CLI proxy)..."
+maybe_run "install/update rtk (see output above for details)" \
+    bash "$DOTFILES_DIR/setup-rtk.sh"
+
 echo ""
 echo "==> Summary"
 if [[ ${#LINKED[@]} -gt 0 ]];  then printf '  linked:   %s\n'  "${LINKED[@]}";  fi
