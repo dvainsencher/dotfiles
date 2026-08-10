@@ -35,6 +35,7 @@ All changed files fall into skip-only categories:
 - Files under `.github/` **unless** they are workflow files (`*.yml`, `*.yaml`)
 - Test files only (`*.test.*`, `*.spec.*`, files under `tests/`, `test/`, `__tests__/`)
 - Whitespace-only changes (0 insertions/deletions of meaningful lines)
+- Changes confined to docs/roadmap/* 
 
 ### `deep`
 Any changed file matches a sensitive glob:
