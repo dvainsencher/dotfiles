@@ -61,10 +61,20 @@ happened for real, easy-nf issue #327, 2026-08-11). Every time:
    commit is confirmed on `origin/main`), then `git fetch origin main:main` in the
    original directory so its local `main` ref isn't left stale.
 
+**Exception — a branch syncing its own issue.** The "Roadmap sync" rule above (mark
+the item `done` before opening its PR) is meant to travel *with* that branch's own
+commit, not through a worktree — `scrummy set-status <id> done` or a `log-issue`
+checkpoint for the issue this branch itself implements belongs there. The worktree
+rule is about *unrelated* roadmap bookkeeping (a new issue, or someone else's) riding
+along on a branch that has nothing to do with it.
+
 `roadmap-commit-guard.sh` (PreToolUse/Bash, see `.claude/hooks/`) is the mechanical
 backstop for this — it blocks a `git commit` from landing dirty `docs/roadmap`/
-`ROADMAP.md` changes on a non-`main` branch outside a `.claude/worktrees/` worktree, so
-a skipped instruction fails loudly instead of silently landing wrong.
+`ROADMAP.md` changes on a non-`main` branch outside a `.claude/worktrees/` worktree,
+*unless* every dirty roadmap file's id matches the id embedded in the branch's own
+name (`<prefix>/<id>-...`, e.g. `feat/284-...`) — that case is the exception above and
+is let through. So a skipped instruction for genuinely unrelated bookkeeping fails
+loudly instead of silently landing wrong, without blocking the routine same-issue sync.
 
 **Non-scrummy projects:** read sprint items from `docs/sprints.md`. For any item that
 explicitly requires planning, or where you are not 95% confident in scope or approach,
