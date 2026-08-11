@@ -40,6 +40,32 @@ catch bloat early instead of after the session has already ballooned.
 `scrummy-po`/`scrummy-suggest-batches`/etc. skills to plan and reorganize — don't read
 or write `docs/sprints.md`/`ROADMAP.md` for that project at all.
 
+**Scrummy mutations always happen on `main`, in an isolated worktree — never on
+whatever branch the session happens to have checked out.** scrummy itself is
+deliberately git-agnostic (it only writes files; an earlier version that shelled out
+to git/`gh` for this auto-merged unreviewed PRs onto a consuming project's `main` and
+was reverted). That means the calling agent is responsible for the git side, and doing
+it in the session's current directory is wrong: a `scrummy add-issue`/`spec`/`move`
+call run while a feature branch is checked out lands the roadmap files on that branch,
+not `main` — and if that branch's next commit is an unrelated broad `git add`, the
+roadmap files can get silently swept in and pushed bundled with unrelated work (this
+happened for real, easy-nf issue #327, 2026-08-11). Every time:
+
+1. `EnterWorktree` (fresh off `origin/main`) before running any mutating `scrummy`
+   command (`add-issue`, `spec`, `move`, `set-status`, `edit-issue`, `remove-issue`,
+   `create-sprint`, `edit-sprint`, `set-position`, `import`).
+2. Do the scrummy calls and spec editing there.
+3. Commit with a `chore(roadmap): ...` message and push the worktree branch straight
+   to `main`: `git push origin <worktree-branch>:main`.
+4. `ExitWorktree` with `action: "remove"` (`discard_changes: true` is safe once the
+   commit is confirmed on `origin/main`), then `git fetch origin main:main` in the
+   original directory so its local `main` ref isn't left stale.
+
+`roadmap-commit-guard.sh` (PreToolUse/Bash, see `.claude/hooks/`) is the mechanical
+backstop for this — it blocks a `git commit` from landing dirty `docs/roadmap`/
+`ROADMAP.md` changes on a non-`main` branch outside a `.claude/worktrees/` worktree, so
+a skipped instruction fails loudly instead of silently landing wrong.
+
 **Non-scrummy projects:** read sprint items from `docs/sprints.md`. For any item that
 explicitly requires planning, or where you are not 95% confident in scope or approach,
 use `AskUserQuestion` to interview the user before starting. Mark each completed item

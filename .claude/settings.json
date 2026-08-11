@@ -16,6 +16,10 @@
           {
             "type": "command",
             "command": "/home/daniel/.claude/hooks/roadmap-stash-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "/home/daniel/.claude/hooks/roadmap-commit-guard.sh"
           }
         ]
       },
