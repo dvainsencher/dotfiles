@@ -1,9 +1,11 @@
 @RTK.md
 
-## Estilo de escrita
+## Estilo de escrita e comunicação
 
-Ao escrever em português, siga as diretrizes de estilo em
-`~/.claude/styles/portugues.md` antes de produzir o texto final.
+Antes de responder ou produzir texto, siga:
+- `~/.claude/styles/geral.md` (estilo de comunicação, todos os idiomas)
+- `~/.claude/styles/portugues.md` (regras específicas para português)
+
 Priorize clareza e naturalidade acima de formalidade.
 
 ## Workflow

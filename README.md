@@ -58,7 +58,7 @@ gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, 
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line: session usage, rate limits, active pauta sprint |
 | `.claude/commands/` | `~/.claude/commands/` | Global slash commands (`/publish`, `/roadmap`) |
 | `.claude/agents/` | `~/.claude/agents/` | Custom subagents: code-reviewer, test-writer, docs-writer (all Sonnet) |
-| `.claude/styles/` | `~/.claude/styles/` | Writing-style reference guides (e.g. `portugues.md`, a Portuguese writing style guide pointed at from `~/.claude/CLAUDE.md`) |
+| `.claude/styles/` | `~/.claude/styles/` | Writing-style reference guides: `geral.md` (general communication, all languages) and `portugues.md` (Portuguese-specific rules), pointed at from `~/.claude/CLAUDE.md` |
 | `.claude/hooks/` | `~/.claude/hooks/` | PreToolUse hooks: rtk-rewrite, env-loader, check-main-branch |
 
 ### Slash commands
