@@ -48,6 +48,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script |
 | `.claude/commands/` | `~/.claude/commands/` | Claude slash commands |
 | `.claude/agents/` | `~/.claude/agents/` | Custom Claude Code subagents |
+| `.claude/styles/` | `~/.claude/styles/` | Writing-style reference guides (e.g. `portugues.md`), pointed at from `~/.claude/CLAUDE.md` |
 | `.claude/hooks/env-loader.sh` | `~/.claude/hooks/env-loader.sh` | Pre-tool-use hook: prepends `source ~/.env.local` to bash commands |
 | *(generated)* `~/.claude/RTK.md` | — | RTK usage docs, auto-created by `install.sh` if `rtk` is installed |
 | `setup-gdrive-bisync.sh` | not symlinked — run directly or via `install.sh` | Clones gdrive-bisync + dotfiles-private into `~/prj/git/`, wires up periodic Google Drive sync |
@@ -105,9 +106,9 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 
 | Doc | Covers | Update when |
 |-----|--------|-------------|
-| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `.claude/agents/`, `gitconfig.local.example`, gdrive-bisync Google Drive sync, rtk install/update | New dotfile added or removed, symlink targets change, new slash command added, new agent added, bootstrap package list changes, gdrive-bisync wiring changes, `setup-rtk.sh` behavior changes |
+| `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `.claude/agents/`, `.claude/styles/` writing-style guides, `gitconfig.local.example`, gdrive-bisync Google Drive sync, rtk install/update | New dotfile added or removed, symlink targets change, new slash command added, new agent added, new style guide added, bootstrap package list changes, gdrive-bisync wiring changes, `setup-rtk.sh` behavior changes |
 | `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions, gdrive-bisync/dotfiles-private integration, rtk integration | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file, `setup-gdrive-bisync.sh` or `setup-rtk.sh` behavior changes |
-| `.claude/CLAUDE.md` | Global Claude Code workflow rules, subagent model strategy, `.claude/agents/` agent roster | New agent added, agent model or role changes, workflow rules change |
+| `.claude/CLAUDE.md` | Global Claude Code workflow rules, subagent model strategy, `.claude/agents/` agent roster, writing-style guide pointers | New agent added, agent model or role changes, workflow rules change, new writing-style guide added |
 | `.claude/commands/README.md` | `.claude/commands/publish.md`, `.claude/commands/roadmap.md`, slash command setup and usage | New command added or removed, setup steps change |
 | `.claude/commands/publish.md` | Full publish workflow — git, `gh pr`, merge strategy, docs audit, code review | Steps added or reordered, doc-impacting file classification changes, subagent prompts change |
 | `.claude/commands/roadmap.md` | `ROADMAP.md` format, per-item detail files, all `/roadmap` modes | New mode added, roadmap format changes |

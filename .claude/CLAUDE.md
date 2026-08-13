@@ -1,5 +1,11 @@
 @RTK.md
 
+## Estilo de escrita
+
+Ao escrever em português, siga as diretrizes de estilo em
+`~/.claude/styles/portugues.md` antes de produzir o texto final.
+Priorize clareza e naturalidade acima de formalidade.
+
 ## Workflow
 
 **Branch first**: Before making any code change, propose a branch name and create it. Use prefixes `feat/`, `fix/`, `chore/`. If the planned work spans multiple roadmap items, suggest splitting into separate focused PRs and propose an order based on priority — if the project tracks work with `scrummy` (a `docs/roadmap/issues.jsonl` exists, or the project's own CLAUDE.md says so), read that priority from `scrummy show`; otherwise from ROADMAP.md.
