@@ -57,6 +57,7 @@ link "$DOTFILES_DIR/.claude/commands"              "$HOME/.claude/commands"
 link "$DOTFILES_DIR/.claude/hooks"                 "$HOME/.claude/hooks"
 link "$DOTFILES_DIR/.claude/agents"                "$HOME/.claude/agents"
 link "$DOTFILES_DIR/.claude/RTK.md"               "$HOME/.claude/RTK.md"
+link "$DOTFILES_DIR/.claude/styles"                "$HOME/.claude/styles"
 
 echo "==> Registering GitHub MCP..."
 [ -f "$HOME/.env.local" ] && source "$HOME/.env.local"
