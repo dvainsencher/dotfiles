@@ -37,6 +37,14 @@ apt_install ripgrep
 apt_install direnv
 apt_install fontconfig
 
+echo "==> Setting vim as the default terminal editor..."
+if [[ "$(update-alternatives --query editor 2>/dev/null | awk '/^Value:/{print $2}')" == "/usr/bin/vim.basic" ]]; then
+    SKIPPED+=("default editor (already vim)")
+else
+    sudo update-alternatives --set editor /usr/bin/vim.basic
+    INSTALLED+=("default editor -> vim")
+fi
+
 echo "==> Installing Python dev tools..."
 apt_install python3
 apt_install python3-pip

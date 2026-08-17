@@ -19,6 +19,10 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 - `gitconfig` uses `hooksPath = ~/.config/git-hooks` (cloned from `dvainsencher/git-hooks`)
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
+- `bootstrap.sh` sets vim as the system default editor via `update-alternatives --set editor
+  /usr/bin/vim.basic` — Debian/Ubuntu defaults this to nano (higher alternatives priority) even
+  with vim installed, and tools that shell out to `/usr/bin/editor` (`crontab -e`,
+  `sensible-editor`, etc.) ignore `$EDITOR`
 - gdrive-bisync and dotfiles-private are separate repos (not vendored here) cloned into
   `~/prj/git/` by `setup-gdrive-bisync.sh` — kept separate so private folder names/paths never
   land in this public repo. Both the private clone and the gdrive-bisync install step are

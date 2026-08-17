@@ -32,6 +32,8 @@ automatically by `setup-gdrive-bisync.sh` if missing.
 
 For `bootstrap.sh`: just `curl` — everything else is installed automatically, including:
 gh, fzf, tmux, jq, ripgrep, direnv, uv, Node.js, Starship, nerd fonts, VS Code, Chrome, Claude Desktop, Claude Code.
+`bootstrap.sh` also sets vim as the system default editor (`update-alternatives --set editor`),
+overriding the Debian/Ubuntu default of nano.
 
 ## What's included
 
