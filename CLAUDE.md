@@ -2,7 +2,7 @@
 
 ## Repo purpose
 Personal dotfiles for Ubuntu/Debian. Two entry points:
-- `install.sh` — symlinks dotfiles, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`, installs/updates rtk, sets up gdrive-bisync Google Drive sync
+- `install.sh` — symlinks dotfiles, generates `~/.gitconfig`, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`, installs/updates rtk, sets up gdrive-bisync Google Drive sync
 - `bootstrap.sh` — full fresh-machine setup (packages, tools, fonts, SSH key, then runs install.sh)
 
 ## Commit conventions
@@ -16,6 +16,16 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 
 ## Key design decisions
 - `~/.gitconfig.local` holds `[user]` identity — not tracked, created from `gitconfig.local.example`
+- `~/.gitconfig` is deliberately **not** a symlink into this repo (the only dotfile that isn't).
+  `install.sh` generates it as a real file containing two `[include]` directives — this repo's
+  `gitconfig`, then `~/.gitconfig.local`. `git config --global` always writes to `~/.gitconfig`;
+  with a symlink there, those writes land in the tracked file, which is how a self-hosted runner
+  calling `git config --global --add safe.directory` appended 955 duplicate lines to the public
+  repo. The stub routes such writes into an untracked file instead. `setup_gitconfig()` in
+  `install.sh` is idempotent: migrates an existing symlink, backs up an unmanaged real file to
+  `~/.gitconfig.bak`, and skips an already-correct stub so accumulated settings survive a re-run.
+  The tracked `gitconfig` must **not** include `~/.gitconfig.local` itself — it is already
+  included by the stub afterwards, and including it twice duplicates every multi-valued key
 - `gitconfig` uses `hooksPath = ~/.config/git-hooks` (cloned from `dvainsencher/git-hooks`)
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
@@ -40,7 +50,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | File | Symlinked to | Purpose |
 |------|-------------|---------|
 | `bashrc` | `~/.bashrc` | Shell config |
-| `gitconfig` | `~/.gitconfig` | Git config (no identity) |
+| `gitconfig` | *not symlinked* — included by generated `~/.gitconfig` | Git config (no identity) |
 | `vimrc` | `~/.vimrc` | Vim config |
 | `inputrc` | `~/.inputrc` | Readline config |
 | `profile` | not symlinked | Login shell PATH + cargo env |
