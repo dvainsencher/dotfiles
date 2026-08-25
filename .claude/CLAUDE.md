@@ -12,6 +12,8 @@ Priorize clareza e naturalidade acima de formalidade.
 
 **Branch first**: Before making any code change, propose a branch name and create it. Use prefixes `feat/`, `fix/`, `chore/`. If the planned work spans multiple roadmap items, suggest splitting into separate focused PRs and propose an order based on priority — if the project tracks work with `scrummy` (a `docs/roadmap/issues.jsonl` exists, or the project's own CLAUDE.md says so), read that priority from `scrummy show`; otherwise from ROADMAP.md.
 
+**Parallel issues → worktrees, on request only**: Single-issue work stays in the current checkout as today — don't create a worktree by default. When the user explicitly wants to work on two or more issues at the same time, set up one `git worktree` per issue (each on its own branch) instead of trying to interleave them in one checkout, and tell the user the `cd <path> && claude` command to run in each new terminal — I can't open terminals myself. Symlink dependency dirs (venv, `node_modules`, etc.) from the main checkout into each new worktree rather than reinstalling, unless the project's own CLAUDE.md gives project-specific setup steps for that — check there first before improvising symlink targets.
+
 **Publish on completion**: Commit locally as you go. Run `/publish` once per coherent,
 shippable unit of work (matching the project's "complete units, not minimal diffs" PR
 guidance) — not after every small edit. Each `/publish` pays for a CI wait and a
@@ -29,12 +31,18 @@ a branch until the unit is done is expected.
 
 **Bug fix TDD**: When you find a bug, first write a failing test that reproduces it, then fix the code, then run the test again to confirm it's green. Never fix a bug without a test.
 
-**Roadmap sync**: Before opening a PR, mark the corresponding item done. If the
-project tracks work with `scrummy` (a `docs/roadmap/issues.jsonl` exists, or the
-project's own CLAUDE.md points at scrummy), run `scrummy set-status <id> done`
-instead of editing any file directly — scrummy's CLI is the only writer to its own
-`docs/roadmap/*`. Otherwise, mark the corresponding ROADMAP.md item `[x]` and
-include that change in the feature branch commit so it merges with the work.
+**Roadmap sync**: Mark the item `doing` the moment you start working on it — before
+the first commit — so an issue in flight reads as `doing`, not still `ready`/`idea`.
+Only mark it `done` once the work is actually complete **and approved**: after the
+`/publish` review step (5.6) has resolved with no outstanding 🔴 findings, not
+merely "before opening a PR" — a PR can still come back with blocking findings
+after it's opened. If review reopens the work, move the item back to `doing`, not
+`done`, until it's re-resolved. If the project tracks work with `scrummy` (a
+`docs/roadmap/issues.jsonl` exists, or the project's own CLAUDE.md points at
+scrummy), run `scrummy set-status <id> doing`/`done` instead of editing any file
+directly — scrummy's CLI is the only writer to its own `docs/roadmap/*`. Otherwise,
+mark the corresponding ROADMAP.md item accordingly and include that change in the
+feature branch commit so it merges with the work.
 
 **Frontend design**: When creating or significantly redesigning frontend pages or components, invoke the `frontend-design:frontend-design` skill before writing any code.
 
@@ -70,11 +78,12 @@ happened for real, easy-nf issue #327, 2026-08-11). Every time:
    original directory so its local `main` ref isn't left stale.
 
 **Exception — a branch syncing its own issue.** The "Roadmap sync" rule above (mark
-the item `done` before opening its PR) is meant to travel *with* that branch's own
-commit, not through a worktree — `scrummy set-status <id> done` or a `log-issue`
-checkpoint for the issue this branch itself implements belongs there. The worktree
-rule is about *unrelated* roadmap bookkeeping (a new issue, or someone else's) riding
-along on a branch that has nothing to do with it.
+the item `doing` on start, `done` once the work is complete and approved) is meant
+to travel *with* that branch's own commits, not through a worktree — `scrummy
+set-status <id> doing`/`done`, or a `log-issue` checkpoint, for the issue this
+branch itself implements belongs there. The worktree rule is about *unrelated*
+roadmap bookkeeping (a new issue, or someone else's) riding along on a branch that
+has nothing to do with it.
 
 `roadmap-commit-guard.sh` (PreToolUse/Bash, see `.claude/hooks/`) is the mechanical
 backstop for this — it blocks a `git commit` from landing dirty `docs/roadmap`/
