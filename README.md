@@ -220,8 +220,11 @@ project you're currently working in — repo names, local paths, none of it belo
 this public repo.
 
 A `filter=claude-settings` clean filter (`.gitattributes`, defined in the tracked
-`gitconfig`) strips `autoMode` on the way into git — `git add`/`commit` never store it,
-even though the live file keeps it for the harness to read:
+`gitconfig`) strips `autoMode` on the way into git — `git add`/`commit` never store it.
+The live file keeps it for the harness to read, with one exception: `git stash` runs the
+same clean/smudge round-trip, so stashing and popping this file silently drops whatever
+`autoMode` was present before the stash. Harmless in practice since the harness
+regenerates it every session, but worth knowing if it ever looks like it vanished.
 
 ```ini
 [filter "claude-settings"]
@@ -234,9 +237,11 @@ even though the live file keeps it for the harness to read:
 on this path fails and **deletes the working file** rather than leaving it alone — hit
 this directly while testing. `smudge = cat` makes checkout an explicit no-op copy of the
 already-clean committed blob. `required = true` on the `clean` side is what you actually
-want: a missing/broken `jq` makes `git add` refuse rather than silently letting
+want: a missing/broken `jq` makes any git command that reads this path through the filter
+(`add`, `diff`, `show`, `log -p`, not just `commit`) refuse rather than silently letting
 `autoMode` through. `jq` is already an install.sh/bootstrap.sh dependency.
 
-This filter is defined in the tracked `gitconfig`, so it's live on any machine once
-`setup-gitconfig.sh` (or `install.sh`) has run there — same mechanism, same caveat as
-the migration note above.
+This filter lives directly in the tracked `gitconfig`, so — unlike the identity-loss
+migration caveat above — it's active on any machine as soon as that file is pulled, even
+one still on the old-style `~/.gitconfig` symlink from before `setup-gitconfig.sh`
+existed. No re-run is needed specifically for this filter to take effect.

@@ -37,11 +37,16 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
   problem. Instead a `filter=claude-settings` git clean filter (`.gitattributes`; the filter
   itself defined in the tracked `gitconfig`) strips the harness-generated `autoMode.environment`
   block (local paths, other-repo details) on the way into git — `git add`/`commit` never store
-  it, though the live file keeps it. `smudge = cat` is required alongside `clean`: with
-  `required = true` and no `smudge` command, `git checkout` on this path fails and **deletes the
-  working file** rather than leaving it alone (hit directly while testing this). `required = true`
-  on `clean` is the actual protection — a missing/broken `jq` makes `git add` refuse rather than
-  silently letting `autoMode` through
+  it, though the live file keeps it (except `git stash`, which round-trips through the same
+  clean/smudge filter and so drops `autoMode` on pop — harmless since the harness regenerates it
+  every session). `smudge = cat` is required alongside `clean`: with `required = true` and no
+  `smudge` command, `git checkout` on this path fails and **deletes the working file** rather
+  than leaving it alone (hit directly while testing this). `required = true` on `clean` is the
+  actual protection — a missing/broken `jq` makes any git command reading this path through the
+  filter (`add`, `diff`, `show`, `log -p`, not just `commit`) refuse rather than silently letting
+  `autoMode` through. Unlike the `~/.gitconfig.local` migration caveat above, this filter lives
+  directly in the tracked `gitconfig`, so it's active as soon as that file is pulled — no
+  `setup-gitconfig.sh` re-run required specifically for it
 - `gitconfig` uses `hooksPath = ~/.config/git-hooks` (cloned from `dvainsencher/git-hooks`)
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
