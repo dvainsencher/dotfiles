@@ -15,8 +15,10 @@
     helper = !/usr/bin/gh auth git-credential
 [core]
     hooksPath = ~/.config/git-hooks
-[include]
-    path = ~/.gitconfig.local
+# ~/.gitconfig.local (identity + machine-local settings) is included by the
+# generated ~/.gitconfig stub, after this file, so its values win. Do not add an
+# include for it here too: this file is itself included, and including
+# gitconfig.local twice duplicates every multi-valued key (safe.directory etc).
 [alias]
     co = checkout
     br = branch

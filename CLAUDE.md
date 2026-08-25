@@ -2,7 +2,7 @@
 
 ## Repo purpose
 Personal dotfiles for Ubuntu/Debian. Two entry points:
-- `install.sh` — symlinks dotfiles, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`, installs/updates rtk, sets up gdrive-bisync Google Drive sync
+- `install.sh` — symlinks dotfiles, generates `~/.gitconfig`, clones git-hooks, installs claude-coworker-model, creates `~/.gitconfig.local`, installs/updates rtk, sets up gdrive-bisync Google Drive sync
 - `bootstrap.sh` — full fresh-machine setup (packages, tools, fonts, SSH key, then runs install.sh)
 
 ## Commit conventions
@@ -16,6 +16,22 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 
 ## Key design decisions
 - `~/.gitconfig.local` holds `[user]` identity — not tracked, created from `gitconfig.local.example`
+- `~/.gitconfig` is deliberately **not** a symlink into this repo (the only dotfile that isn't).
+  `install.sh` generates it as a real file containing two `[include]` directives — this repo's
+  `gitconfig`, then `~/.gitconfig.local`. `git config --global` always writes to `~/.gitconfig`;
+  with a symlink there, those writes land in the tracked file, which is how a self-hosted runner
+  calling `git config --global --add safe.directory` appended 955 duplicate lines to the public
+  repo. The stub routes such writes into an untracked file instead. `setup-gitconfig.sh` is
+  idempotent: migrates an existing symlink, backs up an unmanaged real file to `~/.gitconfig.bak`
+  (timestamped if one already exists), and skips an already-correct stub so accumulated settings
+  survive a re-run.
+- The tracked `gitconfig` must **not** include `~/.gitconfig.local` itself — the generated stub
+  already includes it afterwards, and including it twice duplicates every multi-valued key
+  (`safe.directory`, any `*.insteadOf`). The consequence is a **migration caveat**: pulling this
+  repo is not sufficient on an existing machine. A machine still on the old symlink no longer
+  gets `~/.gitconfig.local` at all and silently loses its git identity until `setup-gitconfig.sh`
+  (or `install.sh`) is run there once — relevant for any pull-only machine, e.g. a self-hosted
+  CI runner
 - `gitconfig` uses `hooksPath = ~/.config/git-hooks` (cloned from `dvainsencher/git-hooks`)
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
@@ -40,7 +56,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | File | Symlinked to | Purpose |
 |------|-------------|---------|
 | `bashrc` | `~/.bashrc` | Shell config |
-| `gitconfig` | `~/.gitconfig` | Git config (no identity) |
+| `gitconfig` | *not symlinked* — included by generated `~/.gitconfig` | Git config (no identity) |
 | `vimrc` | `~/.vimrc` | Vim config |
 | `inputrc` | `~/.inputrc` | Readline config |
 | `profile` | not symlinked | Login shell PATH + cargo env |
@@ -56,6 +72,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `.claude/hooks/env-loader.sh` | `~/.claude/hooks/env-loader.sh` | Pre-tool-use hook: prepends `source ~/.env.local` to bash commands |
 | *(generated)* `~/.claude/RTK.md` | — | RTK usage docs, auto-created by `install.sh` if `rtk` is installed |
 | `setup-gdrive-bisync.sh` | not symlinked — run directly or via `install.sh` | Clones gdrive-bisync + dotfiles-private into `~/prj/git/`, wires up periodic Google Drive sync |
+| `setup-gitconfig.sh` | not symlinked — run directly or via `install.sh` | Generates `~/.gitconfig` as an include-only stub so `git config --global` writes stay out of this repo |
 | `setup-rtk.sh` | not symlinked — run directly or via `install.sh` | Installs/updates rtk to `~/.local/bin/rtk` via its official installer, removes any stray `cargo install` copy |
 
 ## gdrive-bisync / dotfiles-private integration
@@ -111,7 +128,7 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | Doc | Covers | Update when |
 |-----|--------|-------------|
 | `README.md` | `install.sh`, `bootstrap.sh`, all dotfiles, `.claude/commands/` slash commands, `.claude/agents/`, `.claude/styles/` writing-style guides, `gitconfig.local.example`, gdrive-bisync Google Drive sync, rtk install/update | New dotfile added or removed, symlink targets change, new slash command added, new agent added, new style guide added, bootstrap package list changes, gdrive-bisync wiring changes, `setup-rtk.sh` behavior changes |
-| `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions, gdrive-bisync/dotfiles-private integration, rtk integration | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file, `setup-gdrive-bisync.sh` or `setup-rtk.sh` behavior changes |
+| `CLAUDE.md` | Repo purpose, `install.sh`, `bootstrap.sh`, all tracked dotfiles and `.claude/` files, commit conventions, key design decisions, gdrive-bisync/dotfiles-private integration, rtk integration | New dotfile added, symlink target changes, bootstrap conventions change, `.claude/` directory gains or loses a tracked file, `setup-gdrive-bisync.sh`, `setup-gitconfig.sh`, or `setup-rtk.sh` behavior changes |
 | `.claude/CLAUDE.md` | Global Claude Code workflow rules, subagent model strategy, `.claude/agents/` agent roster, writing-style guide pointers | New agent added, agent model or role changes, workflow rules change, new writing-style guide added |
 | `.claude/commands/README.md` | `.claude/commands/publish.md`, `.claude/commands/roadmap.md`, slash command setup and usage | New command added or removed, setup steps change |
 | `.claude/commands/publish.md` | Full publish workflow — git, `gh pr`, merge strategy, docs audit, code review | Steps added or reordered, doc-impacting file classification changes, subagent prompts change |

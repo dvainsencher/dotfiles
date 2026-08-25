@@ -89,11 +89,38 @@ If the push fails due to diverging commits: report the error and ask whether to 
 
 ## Step 5 — Create a Pull Request
 
-Run: `gh pr create --fill`
+**Never run bare `gh pr create --fill`.** `--fill` only pulls the title from the
+branch's own commit message when there is **exactly one** commit ahead of the base
+branch. With two or more (the normal case — this workflow's own Step 2/CLAUDE.md
+convention is to accumulate local commits until a unit is done), `--fill` silently
+falls back to **the branch name, humanized**, as the title — e.g.
+`feat/315-portal-source-watch` → "feat/315 portal source watch". This is not
+hypothetical: it happened (easy-nf PR #383) and the bad title became the
+squash-merge commit subject on `main` permanently, since GitHub defaults a squash
+commit's message to the PR title.
 
-If it fails because a PR already exists: run `gh pr view --json url -q .url` to get the URL.
+1. Detect this repo's actual PR-title convention from its own history — don't
+   assume Conventional Commits, confirm it: `git log --oneline -10 main`. Most
+   projects here use `type(scope): summary (#issue)` (e.g. `fix(ops): contain
+   self-hosted runner OOM ... (#349)`). If the sample doesn't show a clear
+   convention, ask the user once rather than guessing.
+2. Construct an explicit title matching that convention, derived from the
+   branch's own commit messages (never the branch name) — with the issue number
+   if the branch name embeds one (`feat/315-...` → `#315`) or one is otherwise known.
+3. Run: `gh pr create --title "<constructed title>" --fill` — `--fill` still
+   populates the **body** from the commit list; `--title` overrides only the
+   title, so the branch-name fallback never triggers regardless of commit count.
+4. **Verify, don't assume.** `gh pr view --json title -q .title` and check it
+   against the convention. If it's still wrong, fix it now —
+   `gh pr edit --title "..."` — before Step 7. After merge, the title can still be
+   edited cosmetically, but the squash-merge commit subject already baked into
+   `main` cannot be (that requires rewriting `main`'s history — never do this
+   unilaterally; only if the user explicitly asks).
 
-Show the PR URL to the user.
+If PR creation fails because a PR already exists: run `gh pr view --json url -q .url`
+to get the URL, then still run step 4's title check on it.
+
+Show the PR URL **and title** to the user.
 
 ## Step 5.5 — Wait for CI
 
@@ -164,6 +191,18 @@ Print: `Step 5.6 — Review skipped: <triage reason>` and go to Step 6.
 3. Inform the user: "Deep-review label applied — no async CI backstop is deployed; the local review above is the sole backstop."
 4. Continue to Step 6 without waiting for CI.
 
+## Step 5.7 — Detect a parallel-issue worktree
+
+Run: `git worktree list`
+
+If the base branch (`main`/`master`) is checked out at a **different path** than
+the current directory, this is a parallel-issue worktree (see the project's
+"Parallel issues → worktrees" convention, if it has one — sibling worktrees, one
+per issue). Note this for Steps 7 and 8 below: `git checkout main` cannot succeed
+here (git refuses the same branch checked out in two worktrees at once — confirmed
+error: `fatal: 'main' is already used by worktree`), and forcing it would defeat
+why this worktree exists. Otherwise, proceed normally in both steps.
+
 ## Step 6 — Choose merge strategy
 
 Run: `git log main..HEAD --oneline` (or `master..HEAD`)
@@ -177,18 +216,65 @@ State which strategy you chose and why (commit count), then immediately run Step
 
 ## Step 7 — Merge the PR
 
-Run the merge command chosen in Step 6.
+**If Step 5.7 found a parallel-issue worktree**: drop `--delete-branch` from the
+Step 6 command before running it. `gh pr merge --delete-branch` merges via the API
+first, then tries a local `git checkout <base>` + branch delete to clean up — which
+fails here for the same reason as Step 8, and leaves the *remote* branch undeleted
+too (confirmed: easy-nf PR #383 needed a manual follow-up). After a successful
+merge, delete the remote branch explicitly instead:
+```
+git push origin --delete <branch-name>
+```
 
-If it fails (conflicts, required checks): report the error and stop. Do not attempt auto-resolution.
+Otherwise, run the merge command chosen in Step 6 as-is.
+
+If it fails because of a real conflict or a genuinely failing required check:
+report the error and stop. Do not attempt auto-resolution.
+
+If it fails because GitHub reports the PR as blocked/`REVIEW_REQUIRED` by
+branch-protection state that isn't a real problem with the diff (e.g. a
+review-approval requirement nobody on the repo can satisfy) — report the
+specific blocking reason to the user and **stop**. Never pass `--admin` or
+otherwise force the merge on your own initiative: bypassing branch protection
+is a human decision about that specific PR, not a merge mechanic, and an
+agent assuming it silently is exactly the failure mode that caused
+easy-nf's #375-377 (merged with zero human review — see
+`docs/OPERATIONS.md` § "Branch protection" there for the writeup). Only use
+`--admin` if the user explicitly authorizes it for this PR, this time.
 
 ## Step 8 — Sync main
 
-Run:
+**If Step 5.7 found a parallel-issue worktree**: don't check out `main` here —
+it can't succeed, and this worktree is only useful while its own branch is
+unmerged. Now that the PR is merged, clean it up automatically using
+`git -C <primary-path>` (never `cd` — leaves this shell's cwd alone), where
+`<primary-path>` is the `main` worktree's path from Step 5.7's `git worktree list`
+output and `<this-worktree-path>` is the current directory:
+```
+git -C <primary-path> pull --ff-only
+git -C <primary-path> worktree remove --force <this-worktree-path>
+git -C <primary-path> branch -D <branch-name>
+```
+- `pull --ff-only` first, so the primary checkout picks up the merge commit
+  before anything else touches it.
+- `--force` on `worktree remove` is expected and safe: the only "dirty" state a
+  parallel-issue worktree normally carries is CLAUDE.md's symlinked `venv`/
+  `node_modules`, not real uncommitted work (Step 2 already gated on that). If
+  `git status --short` here shows anything beyond known symlinks, stop and ask
+  instead of forcing.
+- `-D` (not `-d`) is required: a squash-merge commit isn't a descendant of the
+  local branch tip, so git can't detect it as "merged" via ancestry even though
+  GitHub fully absorbed its content.
+
+Report the new commit (`git -C <primary-path> log -1 --oneline`) and tell the
+user this worktree directory is gone — further work on this issue needs a new
+worktree or the primary checkout.
+
+**Otherwise** (normal single-checkout repo):
 ```
 git checkout main
 git pull
 ```
-
 Show the latest commit: `git log -1 --oneline`
 
 ---
@@ -197,6 +283,8 @@ Show the latest commit: `git log -1 --oneline`
 
 Print:
 - Branch: `<branch-name>`
-- PR: `<url>`
+- PR: `<url>` — title: `<title>`
 - Merge: `<squash | rebase | merge>`
-- Now on: `main` at `<commit-hash>`
+- Now on: `main` at `<commit-hash>` (normal case) — or, if Step 5.7 found a
+  parallel-issue worktree: `main` fetched to `<commit-hash>` (not checked out
+  here; still on `<branch-name>` in this worktree)

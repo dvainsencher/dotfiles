@@ -40,8 +40,11 @@ maybe_run() {
     DONE+=("$desc")
 }
 
+echo "==> Setting up ~/.gitconfig..."
+maybe_run "set up ~/.gitconfig (see output above for details)" \
+    bash "$DOTFILES_DIR/setup-gitconfig.sh"
+
 echo "==> Linking dotfiles..."
-link "$DOTFILES_DIR/gitconfig"     "$HOME/.gitconfig"
 link "$DOTFILES_DIR/bashrc"        "$HOME/.bashrc"
 link "$DOTFILES_DIR/vimrc"         "$HOME/.vimrc"
 link "$DOTFILES_DIR/inputrc"       "$HOME/.inputrc"
