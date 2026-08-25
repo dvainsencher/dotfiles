@@ -1,5 +1,5 @@
 {
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "PreToolUse": [
       {
@@ -53,6 +53,7 @@
     "vercel@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true
   },
+  "effortLevel": "high",
   "tui": "fullscreen",
   "theme": "dark-daltonized",
   "editorMode": "normal",
