@@ -45,6 +45,7 @@ overriding the Debian/Ubuntu default of nano.
 | `vimrc` | `~/.vimrc` | Indentation, search, statusline, paste toggle |
 | `inputrc` | `~/.inputrc` | Word navigation, history search, case-insensitive completion |
 | `profile` | not symlinked | Login shell PATH + cargo env |
+| `setup-gitconfig.sh` | not symlinked | Generates `~/.gitconfig` as an include-only stub (run directly or via `install.sh`) |
 | `starship.toml` | `~/.config/starship.toml` | Starship prompt config (nerd-font symbols, command duration) |
 
 ## Claude Code
@@ -194,6 +195,17 @@ silently commits machine-local paths into this public repo. Routing global write
 untracked stub keeps them out. Later includes win, so `~/.gitconfig.local` still overrides
 the shared defaults.
 
-`install.sh` is idempotent here: it migrates an existing symlink in place, backs up an
-unmanaged `~/.gitconfig` to `~/.gitconfig.bak`, and leaves an already-correct stub alone so
-settings accumulated in it survive a re-run.
+`setup-gitconfig.sh` is idempotent: it migrates an existing symlink in place, backs up an
+unmanaged `~/.gitconfig` to `~/.gitconfig.bak` (timestamping rather than clobbering a prior
+backup), and leaves an already-correct stub alone so settings accumulated in it survive a
+re-run. Run it directly or via `install.sh`:
+
+```sh
+bash ~/dotfiles/setup-gitconfig.sh [--dry-run]
+```
+
+> **Upgrading an existing machine:** pulling this repo is not enough. The tracked `gitconfig`
+> no longer includes `~/.gitconfig.local` itself (the stub does that), so a machine still
+> using the old symlink loses its git identity — commits there will fail or be misattributed
+> — until you run `setup-gitconfig.sh` (or `install.sh`) once on it. This applies to any
+> machine that only ever pulls the repo, such as a self-hosted CI runner.
