@@ -209,3 +209,39 @@ bash ~/dotfiles/setup-gitconfig.sh [--dry-run]
 > using the old symlink loses its git identity — commits there will fail or be misattributed
 > — until you run `setup-gitconfig.sh` (or `install.sh`) once on it. This applies to any
 > machine that only ever pulls the repo, such as a self-hosted CI runner.
+
+### Why `.claude/settings.json` has a git clean filter
+
+`.claude/settings.json` **is** symlinked (`~/.claude/settings.json` → this repo), unlike
+`~/.gitconfig` above — you edit it interactively (`/config`, `/model`), so it can't be
+generated from a tracked base without a two-way sync problem. But Claude Code's harness
+also rewrites an `autoMode.environment` block into it every session, describing whatever
+project you're currently working in — repo names, local paths, none of it belonging in
+this public repo.
+
+A `filter=claude-settings` clean filter (`.gitattributes`, defined in the tracked
+`gitconfig`) strips `autoMode` on the way into git — `git add`/`commit` never store it.
+The live file keeps it for the harness to read, with one exception: `git stash` runs the
+same clean/smudge round-trip, so stashing and popping this file silently drops whatever
+`autoMode` was present before the stash. Harmless in practice since the harness
+regenerates it every session, but worth knowing if it ever looks like it vanished.
+
+```ini
+[filter "claude-settings"]
+	clean = jq --indent 2 'del(.autoMode)'
+	smudge = cat
+	required = true
+```
+
+`smudge = cat` matters: with `required = true` and no `smudge` command, `git checkout`
+on this path fails and **deletes the working file** rather than leaving it alone — hit
+this directly while testing. `smudge = cat` makes checkout an explicit no-op copy of the
+already-clean committed blob. `required = true` on the `clean` side is what you actually
+want: a missing/broken `jq` makes any git command that reads this path through the filter
+(`add`, `diff`, `show`, `log -p`, not just `commit`) refuse rather than silently letting
+`autoMode` through. `jq` is already an install.sh/bootstrap.sh dependency.
+
+This filter lives directly in the tracked `gitconfig`, so — unlike the identity-loss
+migration caveat above — it's active on any machine as soon as that file is pulled, even
+one still on the old-style `~/.gitconfig` symlink from before `setup-gitconfig.sh`
+existed. No re-run is needed specifically for this filter to take effect.

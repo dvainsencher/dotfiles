@@ -1,0 +1,8 @@
+# .claude/settings.json is symlinked to ~/.claude/settings.json, and the
+# harness rewrites an `autoMode.environment` block into it every session —
+# machine-local paths and other-repo details that don't belong in this public
+# repo (the same leak class as the gitconfig fix, see gitconfig / CLAUDE.md).
+# The `claude-settings` clean filter (defined in the tracked `gitconfig`,
+# included into ~/.gitconfig by setup-gitconfig.sh) strips `autoMode` on the
+# way into git, so the live file keeps it but git never stores it.
+.claude/settings.json filter=claude-settings

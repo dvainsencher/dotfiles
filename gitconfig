@@ -27,3 +27,13 @@
     lg = log --oneline --graph --decorate
     ps = push
     pl = pull
+# Strips the harness-generated `autoMode` block from .claude/settings.json on
+# the way into git (see .gitattributes). `smudge = cat` is an explicit no-op:
+# with `required = true` and no smudge command, git treats checkout itself as
+# failing (confirmed — it deletes the working file). `required = true` means
+# a missing/broken `jq` makes `clean` fail loudly instead of silently letting
+# the block through — jq is already an install.sh/bootstrap.sh dependency.
+[filter "claude-settings"]
+    clean = jq --indent 2 'del(.autoMode)'
+    smudge = cat
+    required = true
