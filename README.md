@@ -209,3 +209,34 @@ bash ~/dotfiles/setup-gitconfig.sh [--dry-run]
 > using the old symlink loses its git identity — commits there will fail or be misattributed
 > — until you run `setup-gitconfig.sh` (or `install.sh`) once on it. This applies to any
 > machine that only ever pulls the repo, such as a self-hosted CI runner.
+
+### Why `.claude/settings.json` has a git clean filter
+
+`.claude/settings.json` **is** symlinked (`~/.claude/settings.json` → this repo), unlike
+`~/.gitconfig` above — you edit it interactively (`/config`, `/model`), so it can't be
+generated from a tracked base without a two-way sync problem. But Claude Code's harness
+also rewrites an `autoMode.environment` block into it every session, describing whatever
+project you're currently working in — repo names, local paths, none of it belonging in
+this public repo.
+
+A `filter=claude-settings` clean filter (`.gitattributes`, defined in the tracked
+`gitconfig`) strips `autoMode` on the way into git — `git add`/`commit` never store it,
+even though the live file keeps it for the harness to read:
+
+```ini
+[filter "claude-settings"]
+	clean = jq --indent 2 'del(.autoMode)'
+	smudge = cat
+	required = true
+```
+
+`smudge = cat` matters: with `required = true` and no `smudge` command, `git checkout`
+on this path fails and **deletes the working file** rather than leaving it alone — hit
+this directly while testing. `smudge = cat` makes checkout an explicit no-op copy of the
+already-clean committed blob. `required = true` on the `clean` side is what you actually
+want: a missing/broken `jq` makes `git add` refuse rather than silently letting
+`autoMode` through. `jq` is already an install.sh/bootstrap.sh dependency.
+
+This filter is defined in the tracked `gitconfig`, so it's live on any machine once
+`setup-gitconfig.sh` (or `install.sh`) has run there — same mechanism, same caveat as
+the migration note above.

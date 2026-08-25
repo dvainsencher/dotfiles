@@ -32,6 +32,16 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
   gets `~/.gitconfig.local` at all and silently loses its git identity until `setup-gitconfig.sh`
   (or `install.sh`) is run there once — relevant for any pull-only machine, e.g. a self-hosted
   CI runner
+- `.claude/settings.json` **is** symlinked (unlike `~/.gitconfig`) — it's interactively edited
+  (`/config`, `/model`), so it can't be generated from a tracked base without a two-way sync
+  problem. Instead a `filter=claude-settings` git clean filter (`.gitattributes`; the filter
+  itself defined in the tracked `gitconfig`) strips the harness-generated `autoMode.environment`
+  block (local paths, other-repo details) on the way into git — `git add`/`commit` never store
+  it, though the live file keeps it. `smudge = cat` is required alongside `clean`: with
+  `required = true` and no `smudge` command, `git checkout` on this path fails and **deletes the
+  working file** rather than leaving it alone (hit directly while testing this). `required = true`
+  on `clean` is the actual protection — a missing/broken `jq` makes `git add` refuse rather than
+  silently letting `autoMode` through
 - `gitconfig` uses `hooksPath = ~/.config/git-hooks` (cloned from `dvainsencher/git-hooks`)
 - Starship replaces PS1 entirely — no manual prompt config in bashrc
 - direnv hook is initialized before starship in bashrc
@@ -61,9 +71,10 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `inputrc` | `~/.inputrc` | Readline config |
 | `profile` | not symlinked | Login shell PATH + cargo env |
 | `gitconfig.local.example` | — | Template for `~/.gitconfig.local` |
+| `.gitattributes` | — | Assigns the `claude-settings` clean filter to `.claude/settings.json` |
 | `starship.toml` | `~/.config/starship.toml` | Starship prompt config |
 | `.claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Global Claude Code config |
-| `.claude/settings.json` | `~/.claude/settings.json` | Claude hooks and statusLine |
+| `.claude/settings.json` | `~/.claude/settings.json` | Claude hooks and statusLine (git clean filter strips `autoMode` on commit — see Key design decisions) |
 | `.claude/settings.local.json` | `~/.claude/settings.local.json` | Claude permissions |
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script |
 | `.claude/commands/` | `~/.claude/commands/` | Claude slash commands |
