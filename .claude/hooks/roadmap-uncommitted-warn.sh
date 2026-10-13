@@ -16,22 +16,28 @@ INPUT=$(cat)
 [ "$(printf '%s' "$INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null)" = "true" ] && exit 0
 
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
-[ -d "$(git rev-parse --show-toplevel 2>/dev/null)/docs/roadmap" ] || exit 0
 
-DIRTY=$(git status --porcelain -- docs/roadmap ROADMAP.md 2>/dev/null)
+# scrummy keeps one roadmap per project, in the primary checkout, and every worktree writes
+# there (scrummy #74). So the changes to look for are in that checkout, not necessarily in
+# this session's worktree. Same resolution as scrummy: SCRUMMY_ROOT, else the primary.
+ROOT="${SCRUMMY_ROOT:-$(git worktree list --porcelain 2>/dev/null | sed -n '1s/^worktree //p')}"
+[ -n "$ROOT" ] && [ -d "$ROOT/docs/roadmap" ] || exit 0
+
+DIRTY=$(git -C "$ROOT" status --porcelain -- docs/roadmap ROADMAP.md 2>/dev/null)
 [ -z "$DIRTY" ] && exit 0
 
 {
-  echo "Uncommitted scrummy roadmap changes are still in the working tree:"
+  echo "Uncommitted scrummy roadmap changes are still in the roadmap checkout ($ROOT):"
   echo
   printf '%s\n' "$DIRTY" | sed 's/^/    /'
   echo
-  echo "Commit them before finishing — another session in this clone will be blocked from"
-  echo "switching branches until they land, and left uncommitted they are easy to lose:"
+  echo "Commit them before finishing — left uncommitted they are easy to lose, and the next"
+  echo "session in that checkout is blocked from switching branches until they land:"
   echo
-  echo "    git add docs/roadmap ROADMAP.md && git commit -m 'scrummy: backlog update'"
+  echo "    roadmap-commit"
   echo
-  echo "If they belong with code changes you are already committing, include them there."
+  echo "(stages only docs/roadmap and ROADMAP.md there, commits, pulls --rebase, pushes to main;"
+  echo "it refuses if that checkout is not on main — then tell the user instead.)"
   echo "If they were left by another session and are not yours, say so and stop."
 } >&2
 
