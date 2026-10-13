@@ -7,7 +7,7 @@ Personal dotfiles for Ubuntu/Debian — shell, git, vim, Starship prompt, direnv
 | Script | Use when |
 |--------|----------|
 | `bootstrap.sh` | Fresh machine — installs packages, tools, fonts, generates SSH key, then runs `install.sh` |
-| `install.sh` | Dotfiles only — symlinks config files, installs cheap-worker tools, installs+registers cclsp, clones git-hooks, installs/updates rtk, sets up gdrive-bisync Google Drive sync |
+| `install.sh` | Dotfiles only — symlinks config files and `bin/` scripts (into `~/.local/bin`), installs cheap-worker tools, installs+registers cclsp, clones git-hooks, installs/updates rtk, sets up gdrive-bisync Google Drive sync |
 
 ### Bootstrap a fresh machine
 
@@ -46,6 +46,7 @@ overriding the Debian/Ubuntu default of nano.
 | `inputrc` | `~/.inputrc` | Word navigation, history search, case-insensitive completion |
 | `profile` | not symlinked | Login shell PATH + cargo env |
 | `setup-gitconfig.sh` | not symlinked | Generates `~/.gitconfig` as an include-only stub (run directly or via `install.sh`) |
+| `bin/*` | `~/.local/bin/*` | Helper scripts. `roadmap-commit` stages only `docs/roadmap` and `ROADMAP.md` in the primary checkout, commits, `pull --rebase`s and pushes; refuses if the primary isn't on `main` |
 | `starship.toml` | `~/.config/starship.toml` | Starship prompt config (nerd-font symbols, command duration) |
 
 ## Claude Code

@@ -62,6 +62,16 @@ link "$DOTFILES_DIR/.claude/agents"                "$HOME/.claude/agents"
 link "$DOTFILES_DIR/.claude/RTK.md"               "$HOME/.claude/RTK.md"
 link "$DOTFILES_DIR/.claude/styles"                "$HOME/.claude/styles"
 
+echo "==> Linking bin scripts..."
+if [[ "$DRY_RUN" == true ]]; then
+    echo "  [dry-run] mkdir -p $HOME/.local/bin"
+else
+    mkdir -p "$HOME/.local/bin"
+fi
+for script in "$DOTFILES_DIR"/bin/*; do
+    [[ -f "$script" ]] && link "$script" "$HOME/.local/bin/$(basename "$script")"
+done
+
 echo "==> Registering GitHub MCP..."
 [ -f "$HOME/.env.local" ] && source "$HOME/.env.local"
 if [[ -n "${GITHUB_PAT:-}" ]]; then
