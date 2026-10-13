@@ -53,7 +53,6 @@ function set-title() {
     PS1=${ORIG_PS1}${TITLE_SEQ}
 }
 
-
 # Saner bash defaults (replaces bash-sensible dependency)
 set -o noclobber
 PROMPT_DIRTRIM=2
