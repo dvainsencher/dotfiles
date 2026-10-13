@@ -39,8 +39,8 @@ merely "before opening a PR" — a PR can still come back with blocking findings
 after it's opened. If review reopens the work, move the item back to `doing`, not
 `done`, until it's re-resolved. If the project tracks work with `scrummy` (a
 `docs/roadmap/issues.jsonl` exists, or the project's own CLAUDE.md points at
-scrummy), run `scrummy set-status <id> doing`/`done` instead of editing any file
-directly — scrummy's CLI is the only writer to its own `docs/roadmap/*`. Otherwise,
+scrummy), run `scrummy claim <id>` (which sets `doing`) / `scrummy set-status <id> done` instead of
+editing any file directly — scrummy's CLI is the only writer to its own `docs/roadmap/*`. Otherwise,
 mark the corresponding ROADMAP.md item accordingly and include that change in the
 feature branch commit so it merges with the work.
 
@@ -56,42 +56,36 @@ catch bloat early instead of after the session has already ballooned.
 `scrummy-po`/`scrummy-suggest-batches`/etc. skills to plan and reorganize — don't read
 or write `docs/sprints.md`/`ROADMAP.md` for that project at all.
 
-**Scrummy mutations always happen on `main`, in an isolated worktree — never on
-whatever branch the session happens to have checked out.** scrummy itself is
-deliberately git-agnostic (it only writes files; an earlier version that shelled out
-to git/`gh` for this auto-merged unreviewed PRs onto a consuming project's `main` and
-was reverted). That means the calling agent is responsible for the git side, and doing
-it in the session's current directory is wrong: a `scrummy add-issue`/`spec`/`move`
-call run while a feature branch is checked out lands the roadmap files on that branch,
-not `main` — and if that branch's next commit is an unrelated broad `git add`, the
-roadmap files can get silently swept in and pushed bundled with unrelated work (this
-happened for real, easy-nf issue #327, 2026-08-11). Every time:
+**Scrummy resolves one shared roadmap per project — run it from any worktree.** Since
+scrummy #74, every worktree of a project reads and writes the roadmap in one canonical
+checkout (the primary one; `scrummy where` shows the path and why). Ids, the lock and
+issue claims are therefore shared across worktrees, and there is no worktree-and-push
+ritual before a mutation any more. What stays on you, because scrummy runs no git:
 
-1. `EnterWorktree` (fresh off `origin/main`) before running any mutating `scrummy`
-   command (`add-issue`, `spec`, `move`, `set-status`, `edit-issue`, `remove-issue`,
-   `create-sprint`, `edit-sprint`, `set-position`, `import`).
-2. Do the scrummy calls and spec editing there.
-3. Commit with a `chore(roadmap): ...` message and push the worktree branch straight
-   to `main`: `git push origin <worktree-branch>:main`.
-4. `ExitWorktree` with `action: "remove"` (`discard_changes: true` is safe once the
-   commit is confirmed on `origin/main`), then `git fetch origin main:main` in the
-   original directory so its local `main` ref isn't left stale.
+1. **Mutations are refused unless the canonical checkout is on `main`** (the branch guard).
+   If it isn't, say so and ask; don't reach for `--allow-branch` / `SCRUMMY_ALLOW_BRANCH=1`
+   on your own.
+2. **Commit the roadmap there, straight to `main`.** After mutating, in the canonical
+   checkout (`<root>` from `scrummy where`), commit only the roadmap paths and push:
+   `git -C <root> add docs/roadmap ROADMAP.md && git -C <root> commit -m "chore(roadmap): ..." -- docs/roadmap ROADMAP.md && git -C <root> pull --rebase && git -C <root> push`.
+   Never `git add -A` there, and never commit roadmap files on a feature branch — a skipped
+   commit is only an uncommitted change in the main checkout, but a roadmap file swept into
+   an unrelated feature commit is how easy-nf #327 happened.
+3. **Claim before working.** Set `SCRUMMY_AGENT` to a name unique to this session or
+   worktree, then `scrummy claim <id>` (or `scrummy next --claim` to take the next ready
+   issue). That marks it `doing`, so it replaces `set-status <id> doing` as the "start" step
+   in the Roadmap sync rule above. `scrummy renew <id>` during long work (leases last 2h),
+   `scrummy release <id>` if you stop without finishing. `set-status <id> done` ends the
+   claim.
+4. To follow other agents' changes, run `scrummy watch --json` under the `Monitor` tool.
 
-**Exception — a branch syncing its own issue.** The "Roadmap sync" rule above (mark
-the item `doing` on start, `done` once the work is complete and approved) is meant
-to travel *with* that branch's own commits, not through a worktree — `scrummy
-set-status <id> doing`/`done`, or a `log-issue` checkpoint, for the issue this
-branch itself implements belongs there. The worktree rule is about *unrelated*
-roadmap bookkeeping (a new issue, or someone else's) riding along on a branch that
-has nothing to do with it.
-
-`roadmap-commit-guard.sh` (PreToolUse/Bash, see `.claude/hooks/`) is the mechanical
-backstop for this — it blocks a `git commit` from landing dirty `docs/roadmap`/
-`ROADMAP.md` changes on a non-`main` branch outside a `.claude/worktrees/` worktree,
-*unless* every dirty roadmap file's id matches the id embedded in the branch's own
-name (`<prefix>/<id>-...`, e.g. `feat/284-...`) — that case is the exception above and
-is let through. So a skipped instruction for genuinely unrelated bookkeeping fails
-loudly instead of silently landing wrong, without blocking the routine same-issue sync.
+A branch's own issue (`doing` at the start, `done` once approved) is no longer committed
+with the feature branch: those status changes land in the canonical checkout, so commit them
+there like any other roadmap change. `roadmap-commit-guard.sh` (PreToolUse/Bash, see
+`.claude/hooks/`) remains the backstop: it blocks a `git commit` that would land dirty
+`docs/roadmap`/`ROADMAP.md` changes on a non-`main` branch outside a `.claude/worktrees/`
+worktree, unless the changed ids match the id in the branch's own name
+(`<prefix>/<id>-...`, e.g. `feat/284-...`).
 
 **Non-scrummy projects:** read sprint items from `docs/sprints.md`. For any item that
 explicitly requires planning, or where you are not 95% confident in scope or approach,
