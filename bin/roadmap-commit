@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Commit the scrummy roadmap straight to main from any worktree of the project.
+#
+#   roadmap-commit [message]
+#
+# scrummy keeps one roadmap per project, in the primary checkout, and never runs git. This
+# does the git half: stage only docs/roadmap and ROADMAP.md there, commit, pull --rebase,
+# push. Other uncommitted work in that checkout is left alone. Honours SCRUMMY_ROOT.
+set -euo pipefail
+
+root="${SCRUMMY_ROOT:-}"
+if [[ -z "$root" ]]; then
+  # First entry of `git worktree list` is the primary checkout (scrummy's own rule 3).
+  root="$(git worktree list --porcelain | sed -n '1s/^worktree //p')"
+fi
+[[ -n "$root" && -d "$root" ]] || { echo "roadmap-commit: not inside a git project" >&2; exit 1; }
+
+# Only paths that exist: a project may not have a generated ROADMAP.md yet.
+paths=()
+for candidate in docs/roadmap ROADMAP.md; do
+  [[ -e "$root/$candidate" ]] && paths+=("$candidate")
+done
+[[ ${#paths[@]} -gt 0 ]] || { echo "roadmap-commit: no roadmap found in $root" >&2; exit 1; }
+branch="$(git -C "$root" symbolic-ref --short -q HEAD || true)"
+if [[ "$branch" != "main" ]]; then
+  echo "roadmap-commit: $root is on '${branch:-detached HEAD}', not main — refusing" >&2
+  exit 1
+fi
+
+changed="$(git -C "$root" status --porcelain -- "${paths[@]}")"
+if [[ -z "$changed" ]]; then
+  echo "roadmap-commit: nothing to commit"
+  exit 0
+fi
+
+if [[ $# -gt 0 ]]; then
+  message="$*"
+else
+  ids="$(sed -n 's#.*docs/roadmap/issues/\([0-9][0-9]*\)\.json.*#\1#p' <<<"$changed" | sort -n | uniq | sed 's/^/#/' | paste -sd, -)"
+  message="chore(roadmap): update backlog${ids:+ ($ids)}"
+fi
+
+git -C "$root" add -- "${paths[@]}"
+git -C "$root" commit -q -m "$message" -- "${paths[@]}"
+git -C "$root" pull -q --rebase --autostash
+git -C "$root" push -q
+echo "roadmap-commit: pushed '$message'"

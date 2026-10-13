@@ -65,11 +65,13 @@ ritual before a mutation any more. What stays on you, because scrummy runs no gi
 1. **Mutations are refused unless the canonical checkout is on `main`** (the branch guard).
    If it isn't, say so and ask; don't reach for `--allow-branch` / `SCRUMMY_ALLOW_BRANCH=1`
    on your own.
-2. **Commit the roadmap there, straight to `main`.** After mutating, in the canonical
-   checkout (`<root>` from `scrummy where`), commit only the roadmap paths and push:
-   `git -C <root> add docs/roadmap ROADMAP.md && git -C <root> commit -m "chore(roadmap): ..." -- docs/roadmap ROADMAP.md && git -C <root> pull --rebase && git -C <root> push`.
-   Never `git add -A` there, and never commit roadmap files on a feature branch — a skipped
-   commit is only an uncommitted change in the main checkout, but a roadmap file swept into
+2. **Commit the roadmap there, straight to `main`.** Run `roadmap-commit` (from any
+   worktree; script in `~/dotfiles/bin`, symlinked into `~/.local/bin`). It stages only
+   `docs/roadmap` and `ROADMAP.md` in the primary checkout, commits, `pull --rebase`s and
+   pushes, leaves other uncommitted work there alone, and refuses if that checkout isn't on
+   `main`. Don't mutate-and-commit after every single command: run it once per task (e.g.
+   before `/publish`, and after marking an issue `done`). Never `git add -A` in that
+   checkout, and never commit roadmap files on a feature branch — a roadmap file swept into
    an unrelated feature commit is how easy-nf #327 happened.
 3. **Claim before working.** Set `SCRUMMY_AGENT` to a name unique to this session or
    worktree, then `scrummy claim <id>` (or `scrummy next --claim` to take the next ready
