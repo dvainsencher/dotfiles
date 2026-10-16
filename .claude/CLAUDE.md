@@ -175,11 +175,10 @@ Boilerplate *writing* (docs, tests, config) → `kimi-write`. Reserve Opus for r
 
 ### Tier 3 — Opus (deep reasoning only)
 
-Default session model: `opus` at `effortLevel: high` (see `.claude/settings.json`).
-This is the most expensive tier, so the ladder above matters *more*, not less: the
-default being Opus is not licence to run greps, file reads, or boilerplate writing
-here. Push that work down to Tier 0/1/2 as aggressively as ever, and drop the
-session to `/model sonnet` for long mechanical stretches.
+Default session model: `sonnet` (set per session with `/model`; `model` is not versioned in
+`.claude/settings.json`). Opus is the most expensive tier, so switch to it deliberately
+(`/model opus`) for the work below, and push greps, file reads and boilerplate writing
+down to Tier 0/1/2 even then.
 
 Opus especially earns its cost for:
 - Deep architecture decisions
@@ -196,9 +195,9 @@ Opus especially earns its cost for:
 
 ## Subagent Model Strategy
 
-Default session model: `opus` at high effort, for both planning and execution.
-- Drop to `/model sonnet` deliberately for long mechanical stretches (bulk edits,
-  repetitive refactors) where Opus-level reasoning buys nothing.
+Default session model: `sonnet`, for both planning and execution.
+- Switch to `/model opus` deliberately for deep architecture, multi-file redesigns and
+  fiscal rule changes, where Sonnet-level reasoning risks an expensive wrong first pass.
 - Subagents keep their own `model:` frontmatter (Haiku for triage/Explore, Sonnet
   for code-reviewer/test-writer/docs-writer) regardless of the session model.
 
