@@ -27,13 +27,17 @@
     lg = log --oneline --graph --decorate
     ps = push
     pl = pull
-# Strips the harness-generated `autoMode` block from .claude/settings.json on
-# the way into git (see .gitattributes). `smudge = cat` is an explicit no-op:
+# Strips per-session state (`autoMode`, `model`, Orca's hook entries) from
+# .claude/settings.json on the way into git (see .gitattributes and
+# .claude/settings-clean.jq; the jq program lives in a file because git's ini
+# parser mangles the double quotes it needs; the absolute ~/dotfiles path
+# keeps the filter working in worktrees on older branches that lack the file,
+# and the repo is expected at ~/dotfiles). `smudge = cat` is an explicit no-op:
 # with `required = true` and no smudge command, git treats checkout itself as
 # failing (confirmed — it deletes the working file). `required = true` means
 # a missing/broken `jq` makes `clean` fail loudly instead of silently letting
-# the block through — jq is already an install.sh/bootstrap.sh dependency.
+# the state through — jq is already an install.sh/bootstrap.sh dependency.
 [filter "claude-settings"]
-    clean = jq --indent 2 'del(.autoMode)'
+    clean = jq --indent 2 -f ~/dotfiles/.claude/settings-clean.jq
     smudge = cat
     required = true

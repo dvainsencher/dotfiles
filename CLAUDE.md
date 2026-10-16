@@ -35,11 +35,12 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 - `.claude/settings.json` **is** symlinked (unlike `~/.gitconfig`) — it's interactively edited
   (`/config`, `/model`), so it can't be generated from a tracked base without a two-way sync
   problem. Instead a `filter=claude-settings` git clean filter (`.gitattributes`; the filter
-  itself defined in the tracked `gitconfig`) strips the harness-generated `autoMode.environment`
-  block (local paths, other-repo details) on the way into git — `git add`/`commit` never store
-  it, though the live file keeps it (except `git stash`, which round-trips through the same
-  clean/smudge filter and so drops `autoMode` on pop — harmless since the harness regenerates it
-  every session). `smudge = cat` is required alongside `clean`: with `required = true` and no
+  itself defined in the tracked `gitconfig`) strips per-session state on the way into git (`.claude/settings-clean.jq`): the
+  harness-generated `autoMode` block (local paths, other-repo details), `model` (changed per
+  session with `/model`) and Orca's hook entries (`~/.orca/agent-hooks/*`) — `git add`/`commit`
+  never store them, though the live file keeps them (except `git stash`, which round-trips through the same
+  clean/smudge filter and so drops those keys on pop — harmless since the harness and Orca regenerate them
+  every session, and `/model` sets `model` again). `smudge = cat` is required alongside `clean`: with `required = true` and no
   `smudge` command, `git checkout` on this path fails and **deletes the working file** rather
   than leaving it alone (hit directly while testing this). `required = true` on `clean` is the
   actual protection — a missing/broken `jq` makes any git command reading this path through the
@@ -77,9 +78,10 @@ Do NOT add `Co-Authored-By` trailers to commit messages.
 | `profile` | not symlinked | Login shell PATH + cargo env |
 | `gitconfig.local.example` | — | Template for `~/.gitconfig.local` |
 | `.gitattributes` | — | Assigns the `claude-settings` clean filter to `.claude/settings.json` |
+| `.claude/settings-clean.jq` | — | jq program run by that filter: strips `autoMode`, `model` and Orca hook entries |
 | `starship.toml` | `~/.config/starship.toml` | Starship prompt config |
 | `.claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Global Claude Code config |
-| `.claude/settings.json` | `~/.claude/settings.json` | Claude hooks and statusLine (git clean filter strips `autoMode` on commit — see Key design decisions) |
+| `.claude/settings.json` | `~/.claude/settings.json` | Claude hooks and statusLine (git clean filter strips `autoMode`, `model` and Orca hooks on commit — see Key design decisions) |
 | `.claude/settings.local.json` | `~/.claude/settings.local.json` | Claude permissions |
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line script |
 | `.claude/commands/` | `~/.claude/commands/` | Claude slash commands |

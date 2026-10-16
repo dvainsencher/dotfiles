@@ -57,7 +57,7 @@ overriding the Debian/Ubuntu default of nano.
 |------|-------------|-------------|
 | `.claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | Global instructions: workflow, routing ladder, delegation rules |
 | `.claude/RTK.md` | `~/.claude/RTK.md` | RTK token-proxy reference (imported by CLAUDE.md via `@RTK.md`) |
-| `.claude/settings.json` | `~/.claude/settings.json` | Hooks, model (`opusplan`), plugins, statusline |
+| `.claude/settings.json` | `~/.claude/settings.json` | Hooks, plugins, statusline (`model` is per-session and not versioned) |
 | `.claude/settings.local.json` | `~/.claude/settings.local.json` | Tool permission allowlist |
 | `.claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Status line: session usage, rate limits, active pauta sprint |
 | `.claude/commands/` | `~/.claude/commands/` | Global slash commands (`/publish`, `/roadmap`) |
@@ -218,18 +218,21 @@ bash ~/dotfiles/setup-gitconfig.sh [--dry-run]
 generated from a tracked base without a two-way sync problem. But Claude Code's harness
 also rewrites an `autoMode.environment` block into it every session, describing whatever
 project you're currently working in — repo names, local paths, none of it belonging in
-this public repo.
+this public repo. `/model` rewrites `model` per session, and Orca adds hook entries that
+call `~/.orca/agent-hooks/claude-hook.sh`.
 
 A `filter=claude-settings` clean filter (`.gitattributes`, defined in the tracked
-`gitconfig`) strips `autoMode` on the way into git — `git add`/`commit` never store it.
-The live file keeps it for the harness to read, with one exception: `git stash` runs the
+`gitconfig`) strips `autoMode`, `model` and Orca's hook entries on the way into git
+(`.claude/settings-clean.jq`, checked by `tests/settings-clean-test.sh`) — `git add`/`commit`
+never store them.
+The live file keeps them for the harness and Orca to read, with one exception: `git stash` runs the
 same clean/smudge round-trip, so stashing and popping this file silently drops whatever
-`autoMode` was present before the stash. Harmless in practice since the harness
-regenerates it every session, but worth knowing if it ever looks like it vanished.
+of those keys was present before the stash. Harmless in practice since the harness and Orca
+regenerate them every session, but worth knowing if it ever looks like it vanished.
 
 ```ini
 [filter "claude-settings"]
-	clean = jq --indent 2 'del(.autoMode)'
+	clean = jq --indent 2 -f ~/dotfiles/.claude/settings-clean.jq
 	smudge = cat
 	required = true
 ```
