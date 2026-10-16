@@ -44,6 +44,15 @@ fi
 
 export EDITOR=vim
 
+#set gnome-terminal tabs title
+function set-title() {
+    if [[ -z "$ORIG_PS1" ]]; then
+        ORIG_PS1=$PS1
+    fi
+    TITLE_SEQ="\\[\\e]2;$*\\a\\]"
+    PS1=${ORIG_PS1}${TITLE_SEQ}
+}
+
 # Saner bash defaults (replaces bash-sensible dependency)
 set -o noclobber
 PROMPT_DIRTRIM=2
