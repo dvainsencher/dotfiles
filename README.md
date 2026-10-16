@@ -223,7 +223,8 @@ call `~/.orca/agent-hooks/claude-hook.sh`.
 
 A `filter=claude-settings` clean filter (`.gitattributes`, defined in the tracked
 `gitconfig`) strips `autoMode`, `model` and Orca's hook entries on the way into git
-(`.claude/settings-clean.jq`) — `git add`/`commit` never store them.
+(`.claude/settings-clean.jq`, checked by `tests/settings-clean-test.sh`) — `git add`/`commit`
+never store them.
 The live file keeps them for the harness and Orca to read, with one exception: `git stash` runs the
 same clean/smudge round-trip, so stashing and popping this file silently drops whatever
 of those keys was present before the stash. Harmless in practice since the harness and Orca
@@ -231,7 +232,7 @@ regenerate them every session, but worth knowing if it ever looks like it vanish
 
 ```ini
 [filter "claude-settings"]
-	clean = jq --indent 2 -f .claude/settings-clean.jq
+	clean = jq --indent 2 -f ~/dotfiles/.claude/settings-clean.jq
 	smudge = cat
 	required = true
 ```

@@ -4,11 +4,15 @@
 #   - autoMode: harness-generated, local paths and other-repo details
 #   - model:    changed per session with /model
 #   - hook entries whose command runs ~/.orca/agent-hooks/* (Orca's status
-#     reporting); hook events left empty after that are dropped too
+#     reporting); an entry left with no hooks, and an event left with no
+#     entries, are dropped too. Entries that never had a `hooks` key are kept.
+def orca: (.command // "") | contains(".orca/agent-hooks");
+def strip_entry:
+  if has("hooks") then .hooks |= map(select(orca | not)) else . end;
+def emptied: has("hooks") and (.hooks | length) == 0;
+
 del(.autoMode, .model)
 | if .hooks then .hooks |= (
-    map_values(
-      map(.hooks |= map(select((.command // "") | contains(".orca/agent-hooks") | not)))
-      | map(select((.hooks | length) > 0))
-    ) | with_entries(select(.value | length > 0))
+    map_values(map(strip_entry) | map(select(emptied | not)))
+    | with_entries(select(.value | length > 0))
   ) else . end
